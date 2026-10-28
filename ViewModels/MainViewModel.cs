@@ -25,7 +25,7 @@ public partial class MainViewModel : ViewModelBase
     private readonly LogUploaderService _service;
 
     [ObservableProperty]
-    private int _selectedNavigationIndex;
+    private int _selectedNavigationIndex = 0;
 
     [ObservableProperty]
     private string _logsLocation;
@@ -44,6 +44,38 @@ public partial class MainViewModel : ViewModelBase
 
     [ObservableProperty]
     private bool _isTwitchConnected;
+
+    public string MonitoringButtonText => IsMonitoring ? "Stop Monitoring" : "Start Monitoring";
+    public string SessionButtonText => IsSessionRunning ? "End Session" : "Start Session";
+    public string SessionPauseButtonText => IsSessionPaused ? "Resume Session" : "Pause Session";
+    public string TwitchConnectButtonText => IsTwitchConnected ? "Disconnect" : "Connect";
+    public string MonitoringStatusText => IsMonitoring ? "Monitoring: Active" : "Monitoring: Stopped";
+    public string SessionStatusText => IsSessionRunning 
+        ? (IsSessionPaused ? "Session: Paused" : "Session: Active") 
+        : "Session: Inactive";
+
+    partial void OnIsMonitoringChanged(bool value)
+    {
+        OnPropertyChanged(nameof(MonitoringButtonText));
+        OnPropertyChanged(nameof(MonitoringStatusText));
+    }
+
+    partial void OnIsSessionRunningChanged(bool value)
+    {
+        OnPropertyChanged(nameof(SessionButtonText));
+        OnPropertyChanged(nameof(SessionStatusText));
+    }
+
+    partial void OnIsSessionPausedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(SessionPauseButtonText));
+        OnPropertyChanged(nameof(SessionStatusText));
+    }
+
+    partial void OnIsTwitchConnectedChanged(bool value)
+    {
+        OnPropertyChanged(nameof(TwitchConnectButtonText));
+    }
 
     [ObservableProperty]
     private int _logsCount;

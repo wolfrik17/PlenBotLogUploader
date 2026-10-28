@@ -40,12 +40,12 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <!-- Monitoring Badge -->
                     <Border CornerRadius="12" Padding="10,4" Background="{DynamicResource SystemAccentColor}">
-                        <TextBlock Text="{Binding IsMonitoring, StringFormat='{}Monitoring: {0}'}" 
+                        <TextBlock Text="{Binding MonitoringStatusText}" 
                                    Foreground="White" FontSize="12" FontWeight="SemiBold" />
                     </Border>
                     <!-- Session Badge -->
                     <Border IsVisible="{Binding IsSessionRunning}" CornerRadius="12" Padding="10,4" Background="#E65100">
-                        <TextBlock Text="{Binding IsSessionPaused, StringFormat='{}Session: {0}'}" 
+                        <TextBlock Text="{Binding SessionStatusText}" 
                                    Foreground="White" FontSize="12" FontWeight="SemiBold" />
                     </Border>
                     <!-- Twitch Badge -->
@@ -57,10 +57,10 @@
                 <!-- Quick Actions -->
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
                     <Button Command="{Binding ToggleMonitoringCommand}">
-                        <TextBlock Text="{Binding IsMonitoring, StringFormat='{}Stop Monitoring|Start Monitoring'}" />
+                        <TextBlock Text="{Binding MonitoringButtonText}" />
                     </Button>
                     <Button Command="{Binding ToggleSessionCommand}">
-                        <TextBlock Text="{Binding IsSessionRunning, StringFormat='{}End Session|Start Session'}" />
+                        <TextBlock Text="{Binding SessionButtonText}" />
                     </Button>
                 </StackPanel>
             </Grid>
@@ -252,9 +252,9 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate DataType="discord:DiscordWebhookData">
                                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Button Content="Test" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).TestWebhookCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Edit" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).EditWebhookCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Delete" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteWebhookCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Test" Command="{Binding $parent[Window].DataContext.TestWebhookCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Edit" Command="{Binding $parent[Window].DataContext.EditWebhookCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Delete" Command="{Binding $parent[Window].DataContext.DeleteWebhookCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -276,7 +276,7 @@
                                             <Grid ColumnDefinitions="140,*,Auto" RowDefinitions="Auto,Auto" Margin="0,8,0,0">
                                                 <TextBlock Grid.Row="0" Grid.Column="0" Text="Twitch Channel:" VerticalAlignment="Center" Margin="0,0,10,10" />
                                                 <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding TwitchChannelName}" Watermark="e.g. your_twitch_username" Margin="0,0,10,10" />
-                                                <Button Grid.Row="0" Grid.Column="2" Content="{Binding IsTwitchConnected, StringFormat='{}Disconnect|Connect'}" Command="{Binding ToggleTwitchCommand}" Margin="0,0,0,10" />
+                                                <Button Grid.Row="0" Grid.Column="2" Content="{Binding TwitchConnectButtonText}" Command="{Binding ToggleTwitchCommand}" Margin="0,0,0,10" />
 
                                                 <TextBlock Grid.Row="1" Grid.Column="0" Text="Options:" VerticalAlignment="Center" Margin="0,0,10,0" />
                                                 <StackPanel Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Spacing="6">
@@ -351,8 +351,8 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate DataType="aleeva:AleevaIntegration">
                                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Button Content="Edit" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).EditAleevaCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Delete" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteAleevaCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Edit" Command="{Binding $parent[Window].DataContext.EditAleevaCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Delete" Command="{Binding $parent[Window].DataContext.DeleteAleevaCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -398,9 +398,9 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate DataType="pings:PingConfiguration">
                                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Button Content="Test" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).TestPingCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Edit" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).EditPingCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Delete" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeletePingCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Test" Command="{Binding $parent[Window].DataContext.TestPingCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Edit" Command="{Binding $parent[Window].DataContext.EditPingCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Delete" Command="{Binding $parent[Window].DataContext.DeletePingCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -439,8 +439,8 @@
                                                         <DataGridTemplateColumn.CellTemplate>
                                                             <DataTemplate DataType="gw2api:ApplicationSettingsUploadUserToken">
                                                                 <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                                    <Button Content="Edit" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).EditUserTokenCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                                    <Button Content="Delete" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteUserTokenCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                                    <Button Content="Edit" Command="{Binding $parent[Window].DataContext.EditUserTokenCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                                    <Button Content="Delete" Command="{Binding $parent[Window].DataContext.DeleteUserTokenCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
                                                                 </StackPanel>
                                                             </DataTemplate>
                                                         </DataGridTemplateColumn.CellTemplate>
@@ -464,8 +464,8 @@
                                 <TextBlock Text="Group all logs from this play session into a single summary broadcast for Discord." Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
                             </StackPanel>
                             <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="8">
-                                <Button Content="{Binding IsSessionRunning, StringFormat='{}Stop Session|Start Session'}" Command="{Binding ToggleSessionCommand}" />
-                                <Button Content="{Binding IsSessionPaused, StringFormat='{}Resume|Pause'}" Command="{Binding TogglePauseSessionCommand}" IsEnabled="{Binding IsSessionRunning}" />
+                                <Button Content="{Binding SessionButtonText}" Command="{Binding ToggleSessionCommand}" />
+                                <Button Content="{Binding SessionPauseButtonText}" Command="{Binding TogglePauseSessionCommand}" IsEnabled="{Binding IsSessionRunning}" />
                             </StackPanel>
                             <Grid Grid.Row="1" Grid.ColumnSpan="2" ColumnDefinitions="Auto,*,Auto,*" Margin="0,14,0,0">
                                 <TextBlock Grid.Column="0" Text="Session Name:" VerticalAlignment="Center" Margin="0,0,10,0" />
@@ -527,8 +527,8 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate DataType="teams:Team">
                                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Button Content="Edit" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).EditTeamCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Delete" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteTeamCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Edit" Command="{Binding $parent[Window].DataContext.EditTeamCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Delete" Command="{Binding $parent[Window].DataContext.DeleteTeamCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
@@ -552,8 +552,8 @@
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate DataType="gw2api:ApplicationSettingsGw2Api">
                                                     <StackPanel Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
-                                                        <Button Content="Edit" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).EditGw2ApiKeyCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
-                                                        <Button Content="Delete" Command="{Binding $parent[Window].((vm:MainViewModel)DataContext).DeleteGw2ApiKeyCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Edit" Command="{Binding $parent[Window].DataContext.EditGw2ApiKeyCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
+                                                        <Button Content="Delete" Command="{Binding $parent[Window].DataContext.DeleteGw2ApiKeyCommand}" CommandParameter="{Binding}" Padding="6,2" FontSize="11" />
                                                     </StackPanel>
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>

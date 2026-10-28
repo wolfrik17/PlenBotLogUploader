@@ -8,7 +8,7 @@
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>false</SelfContained>
     <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>103.0.1</ApplicationVersion>
+    <ApplicationVersion>103.0.2</ApplicationVersion>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
     <Configurations>Debug;Release;ReleaseDLLs;ReleaseSC</Configurations>
   </PropertyGroup>
@@ -19,7 +19,7 @@
     <StartupObject>PlenBotLogUploader.Program</StartupObject>
     <NeutralLanguage>en</NeutralLanguage>
     <Nullable>disable</Nullable>
-    <Version>103.0.1</Version>
+    <Version>103.0.2</Version>
     <Title>PlenBot Log Uploader</Title>
     <PackageId>PlenBotLogUploader</PackageId>
     <Authors>Plenyx @plenyx</Authors>
