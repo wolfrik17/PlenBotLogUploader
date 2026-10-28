@@ -115,7 +115,7 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
     public void Initialize()
     {
         // Load data stores
-        Bosses.FromJsonFile(Bosses.JsonFileLocation);
+        Bosses.Load();
         DiscordWebhooks.LoadDiscordWebhooks();
         Teams.Teams.LoadTeams();
         PingConfigurations.LoadPings();

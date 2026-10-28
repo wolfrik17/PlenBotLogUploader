@@ -19,7 +19,8 @@ internal static class Program
             .Where(x => x.Id != currProcess.Id)
             .ToArray();
 
-        var localDir = AppContext.BaseDirectory;
+        var localDir = ApplicationSettings.LocalDir;
+        ApplicationSettings.Load();
 
         // Process command line arguments
         if (args.Length >= 2)

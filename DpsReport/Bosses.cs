@@ -22,6 +22,32 @@ internal static class Bosses
     /// <returns>A list with all encounters.</returns>
     internal static List<BossData> All { get; private set; } = [];
 
+    internal static void Load()
+    {
+        try
+        {
+            if (File.Exists(JsonFileLocation))
+            {
+                FromJsonFile(JsonFileLocation);
+            }
+            else
+            {
+                GetDefaultSettingsForBossesAsDictionary();
+            }
+        }
+        catch
+        {
+            try
+            {
+                GetDefaultSettingsForBossesAsDictionary();
+            }
+            catch
+            {
+                All = [];
+            }
+        }
+    }
+
     /// <summary>
     ///     Loads a list of BossData from a specified json file.
     /// </summary>

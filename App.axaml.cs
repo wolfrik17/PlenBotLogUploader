@@ -23,7 +23,7 @@ public partial class App : Application
     public override void OnFrameworkInitializationCompleted()
     {
         // Apply saved theme
-        var theme = ApplicationSettings.Current.Theme;
+        var theme = ApplicationSettings.Current?.Theme;
         RequestedThemeVariant = theme switch
         {
             "Dark" => ThemeVariant.Dark,

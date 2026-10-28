@@ -30,16 +30,61 @@ internal sealed class ApplicationSettings
 {
     private static readonly string _fileName = "app_settings.json";
 
+    private static ApplicationSettings _current;
+
     internal ApplicationSettings()
     {
-        Current = this;
+        _current = this;
     }
 
     internal static int Version => 103;
 
-    internal static ApplicationSettings Current { get; private set; }
+    internal static ApplicationSettings Current
+    {
+        get => _current ??= Load();
+        private set => _current = value;
+    }
 
-    internal static string LocalDir { get; set; } = AppContext.BaseDirectory;
+    private static string _localDir;
+
+    internal static string LocalDir
+    {
+        get
+        {
+            if (_localDir is not null)
+            {
+                return _localDir;
+            }
+
+            // On Linux or when running in an AppImage / flatpak, use user config dir ~/.config/PlenBotLogUploader
+            if (!OperatingSystem.IsWindows() || !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("APPIMAGE")))
+            {
+                var configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PlenBotLogUploader");
+                Directory.CreateDirectory(configDir);
+                _localDir = configDir;
+            }
+            else
+            {
+                try
+                {
+                    // Check if application directory is writable (portable mode on Windows)
+                    var testFile = Path.Combine(AppContext.BaseDirectory, ".write_test");
+                    File.WriteAllText(testFile, "test");
+                    File.Delete(testFile);
+                    _localDir = AppContext.BaseDirectory;
+                }
+                catch
+                {
+                    var configDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PlenBotLogUploader");
+                    Directory.CreateDirectory(configDir);
+                    _localDir = configDir;
+                }
+            }
+
+            return _localDir;
+        }
+        set => _localDir = value;
+    }
 
     [JsonProperty("aleeva")]
     internal ApplicationSettingsAleeva Aleeva { get; set; } = new();
@@ -147,6 +192,7 @@ internal sealed class ApplicationSettings
                 var settings = JsonConvert.DeserializeObject<ApplicationSettings>(json);
                 if (settings is not null)
                 {
+                    _current = settings;
                     return settings;
                 }
             }
@@ -165,6 +211,7 @@ internal sealed class ApplicationSettings
         }
         var sett = new ApplicationSettings();
         sett.Save();
+        _current = sett;
         return sett;
     }
 
