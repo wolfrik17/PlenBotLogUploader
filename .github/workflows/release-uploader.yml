@@ -103,7 +103,7 @@ jobs:
       with:
         name: PlenBot Log Uploader ${{ github.ref_name }} (Cross-Platform)
         draft: false
-        generate_release_notes: true
+        body_path: RELEASE_NOTES.md
         files: release-files/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

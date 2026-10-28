@@ -37,7 +37,7 @@ internal sealed class ApplicationSettings
         _current = this;
     }
 
-    internal static int Version => 103;
+    internal static int Version => 104;
 
     internal static ApplicationSettings Current
     {
