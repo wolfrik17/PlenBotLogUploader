@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=PlenBot Log Uploader
+Exec=PlenBotLogUploader %u
+Icon=plenbotloguploader
+Type=Application
+Categories=Utility;Game;
+Comment=The all-in-one solution for all your arcdps logs.
+Terminal=false
+StartupWMClass=PlenBotLogUploader

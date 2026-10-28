@@ -1,29 +1,39 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.Tools;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace PlenBotLogUploader.Teams;
 
-internal sealed class Team
+public sealed class Team
 {
     /// <summary>
     ///     ID of the team, for internal use
     /// </summary>
     [JsonProperty("id")]
-    internal int Id { get; set; }
+    public int Id { get; set; }
 
     /// <summary>
     ///     Name of the webhook team
     /// </summary>
     [JsonProperty("name")]
-    internal string Name { get; set; }
+    public string Name { get; set; }
 
     /// <summary>
     ///     What specific condition to use to resolve the team
     /// </summary>
     [JsonProperty("condition")]
-    internal TeamCondition MainCondition { get; set; }
+    public TeamCondition MainCondition { get; set; }
+
+    public TeamLimiter Limiter
+    {
+        get => MainCondition?.Limiter ?? TeamLimiter.Exact;
+        set
+        {
+            MainCondition ??= new TeamCondition();
+            MainCondition.Limiter = value;
+        }
+    }
 
     /// <summary>
     ///     Returns a string that represents the current object.

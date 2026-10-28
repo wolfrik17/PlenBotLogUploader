@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.Tools;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using ZLinq;
 namespace PlenBotLogUploader.Teams;
 
 [JsonObject(MemberSerialization.OptIn)]
-internal sealed class TeamCondition
+public sealed class TeamCondition
 {
     private List<string> _accountNames = [];
     private string _description = "";

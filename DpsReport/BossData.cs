@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using PlenBotLogUploader.Tools;
 using System.Collections.Generic;
@@ -65,8 +65,6 @@ internal sealed class BossData : IListViewItemInfo<BossData>
     string IListViewItemInfo<BossData>.TextToDisplay => string.IsNullOrWhiteSpace(InternalDescription) ? Name : $"{Name} [{InternalDescription}]";
 
     bool IListViewItemInfo<BossData>.CheckedToDisplay => false;
-
-    List<ListViewItemCustom<BossData>> IListViewItemInfo<BossData>.ConnectedItems { get; } = [];
 
     internal string FightName(DpsReportJson reportJson)
     {

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ namespace PlenBotLogUploader.Teams;
 
 internal static class Teams
 {
-    internal static readonly string JsonFileLocation = $@"{ApplicationSettings.LocalDir}\teams.json";
+    internal static string JsonFileLocation => Path.Combine(ApplicationSettings.LocalDir, "teams.json");
 
     /// <summary>
     ///     Returns the main dictionary with all webhook teams.
@@ -37,6 +37,8 @@ internal static class Teams
 
         File.WriteAllText(JsonFileLocation, jsonString, Encoding.UTF8);
     }
+
+    internal static Dictionary<int, Team> LoadTeams() => File.Exists(JsonFileLocation) ? FromJsonFile(JsonFileLocation) : ResetDictionary();
 
     internal static Dictionary<int, Team> FromJsonFile(string filePath)
     {

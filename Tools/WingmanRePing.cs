@@ -12,7 +12,7 @@ namespace PlenBotLogUploader.Tools;
 
 public static class WingmanRePing
 {
-    private static readonly string FileLocation = $@"{ApplicationSettings.LocalDir}\wingmanreping.json";
+    private static string FileLocation => Path.Combine(ApplicationSettings.LocalDir, "wingmanreping.json");
     
     private static HashSet<WingmanPingInfo> _logsToPing;
 

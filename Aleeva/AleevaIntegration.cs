@@ -1,4 +1,4 @@
-﻿using Hardstuck.Http;
+using Hardstuck.Http;
 using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using PlenBotLogUploader.DpsReport;
@@ -13,35 +13,35 @@ using System.Threading.Tasks;
 namespace PlenBotLogUploader.Aleeva;
 
 [JsonObject(MemberSerialization.OptIn)]
-internal class AleevaIntegration : IListViewItemInfo<AleevaIntegration>
+public class AleevaIntegration : IListViewItemInfo<AleevaIntegration>
 {
     private Team _team;
 
     [JsonProperty("active")]
-    internal bool Active { get; set; } = true;
+    public bool Active { get; set; } = true;
 
     [JsonProperty("name")]
-    internal string Name { get; set; } = "";
+    public string Name { get; set; } = "";
 
     [JsonProperty("channel")]
-    internal string Channel { get; set; } = "";
+    public string Channel { get; set; } = "";
 
     [JsonProperty("sendNotification")]
-    internal bool SendNotification { get; set; }
+    public bool SendNotification { get; set; }
 
     [JsonProperty("sendOnSuccessOnly")]
-    internal bool SendOnSuccessOnly { get; set; }
+    public bool SendOnSuccessOnly { get; set; }
 
     [JsonProperty("server")]
-    internal string Server { get; set; } = "";
+    public string Server { get; set; } = "";
 
     [JsonProperty("teamId")]
-    internal int TeamId { get; set; }
+    public int TeamId { get; set; }
 
     /// <summary>
     ///     A selected integration team, with which the Aleeva integration should evaluate itself
     /// </summary>
-    internal Team Team
+    public Team Team
     {
         get
         {
@@ -66,9 +66,7 @@ internal class AleevaIntegration : IListViewItemInfo<AleevaIntegration>
 
     bool IListViewItemInfo<AleevaIntegration>.CheckedToDisplay => Active;
 
-    List<ListViewItemCustom<AleevaIntegration>> IListViewItemInfo<AleevaIntegration>.ConnectedItems { get; } = [];
-
-    internal async Task PostLogToAleeva(FormMain mainLink, HttpClientController controller, DpsReportJson reportJson, List<LogPlayer> players)
+    internal async Task PostLogToAleeva(ILogUploaderController mainLink, HttpClientController controller, DpsReportJson reportJson, List<LogPlayer> players)
     {
         if (!ApplicationSettings.Current.Aleeva.Authorised)
         {

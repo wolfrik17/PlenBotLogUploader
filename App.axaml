@@ -1,0 +1,24 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="PlenBotLogUploader.App">
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+    </Application.Styles>
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon Icon="/Resources/Icon.ico" ToolTipText="PlenBot Log Uploader">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="Open PlenBot" Click="OnTrayOpenClicked" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Toggle Monitoring" Click="OnTrayToggleMonitoringClicked" />
+                        <NativeMenuItem Header="Toggle Session" Click="OnTrayToggleSessionClicked" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Exit" Click="OnTrayExitClicked" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+</Application>

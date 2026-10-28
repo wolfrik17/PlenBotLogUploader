@@ -1,28 +1,45 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.Tools;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
-using System.Windows.Forms;
 
 namespace PlenBotLogUploader.AppSettings;
+
+public struct WindowSize
+{
+    public int Width { get; set; }
+    public int Height { get; set; }
+
+    public WindowSize(int width, int height)
+    {
+        Width = width;
+        Height = height;
+    }
+}
+
+public enum WindowStateSetting
+{
+    Normal = 0,
+    Minimized = 1,
+    Maximized = 2
+}
 
 [JsonObject(MemberSerialization.OptIn)]
 internal sealed class ApplicationSettings
 {
-
-    private static string _fileName = "app_settings.json";
+    private static readonly string _fileName = "app_settings.json";
 
     internal ApplicationSettings()
     {
         Current = this;
     }
-    internal static int Version => 102;
+
+    internal static int Version => 103;
 
     internal static ApplicationSettings Current { get; private set; }
 
-    internal static string LocalDir { get; set; }
+    internal static string LocalDir { get; set; } = AppContext.BaseDirectory;
 
     [JsonProperty("aleeva")]
     internal ApplicationSettingsAleeva Aleeva { get; set; } = new();
@@ -61,10 +78,10 @@ internal sealed class ApplicationSettings
     internal bool UsePollingForLogs { get; set; }
 
     [JsonProperty("mainFormSize")]
-    internal Size MainFormSize { get; set; } = new(649, 784);
+    internal WindowSize MainFormSize { get; set; } = new(1000, 720);
 
     [JsonProperty("mainFormState")]
-    internal FormWindowState MainFormState { get; set; } = FormWindowState.Normal;
+    internal WindowStateSetting MainFormState { get; set; } = WindowStateSetting.Normal;
 
     [JsonProperty("maxConcurrentUploads")]
     internal int MaxConcurrentUploads { get; set; } = 4;
@@ -87,6 +104,9 @@ internal sealed class ApplicationSettings
     [JsonProperty("upload")]
     internal ApplicationSettingsUpload Upload { get; set; } = new();
 
+    [JsonProperty("theme")]
+    internal string Theme { get; set; } = "System";
+
     internal static bool IsRunningInWine { get; } = WineConnoisseur.IsRunningUnderWine();
 
     internal event EventHandler<EventArgs> SettingsSaved;
@@ -95,11 +115,12 @@ internal sealed class ApplicationSettings
     {
         try
         {
-            File.AppendAllText("settings_crash.log", message);
+            var crashLog = Path.Combine(LocalDir, "settings_crash.log");
+            File.AppendAllText(crashLog, $"[{DateTime.Now}] {message}{Environment.NewLine}");
         }
         catch
         {
-            MessageBox.Show(message, "An error occured", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            Console.Error.WriteLine($"Settings crash: {message}");
         }
     }
 
@@ -135,13 +156,11 @@ internal sealed class ApplicationSettings
             }
             try
             {
-                // error when loading occured, save previous settings before resetting
-                File.Copy("app_settings.json", $"app_settings {DateTime.Now:yyyy-MM-dd HHmmss}.json");
+                File.Copy(loadLocation, Path.Combine(LocalDir, $"app_settings {DateTime.Now:yyyy-MM-dd HHmmss}.json"));
             }
             catch (Exception ex)
             {
                 AppendSettingsCrashWithMessage(ex.Message);
-                ;
             }
         }
         var sett = new ApplicationSettings();
@@ -149,7 +168,7 @@ internal sealed class ApplicationSettings
         return sett;
     }
 
-    internal static bool Exists() => File.Exists(LocalDir + _fileName);
-    internal static ApplicationSettings Load() => DeserialiseFromFile(LocalDir + _fileName);
-    internal void Save() => SerialiseToFile(LocalDir + _fileName);
+    internal static bool Exists() => File.Exists(Path.Combine(LocalDir, _fileName));
+    internal static ApplicationSettings Load() => DeserialiseFromFile(Path.Combine(LocalDir, _fileName));
+    internal void Save() => SerialiseToFile(Path.Combine(LocalDir, _fileName));
 }

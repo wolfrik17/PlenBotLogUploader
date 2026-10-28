@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ namespace PlenBotLogUploader.DiscordApi;
 
 internal static class DiscordWebhooks
 {
-    internal static readonly string JsonFileLocation = $@"{ApplicationSettings.LocalDir}\discord_webhooks.json";
+    internal static string JsonFileLocation => Path.Combine(ApplicationSettings.LocalDir, "discord_webhooks.json");
 
     /// <summary>
     ///     Returns the main dictionary with all webhooks.

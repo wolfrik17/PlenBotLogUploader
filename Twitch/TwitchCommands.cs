@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using System.Collections.Generic;
 using System.IO;
@@ -8,7 +8,7 @@ namespace PlenBotLogUploader.Twitch;
 
 internal static class TwitchCommands
 {
-    private static readonly string JsonFileLocation = $@"{ApplicationSettings.LocalDir}\twitch_commands.json";
+    private static string JsonFileLocation => Path.Combine(ApplicationSettings.LocalDir, "twitch_commands.json");
 
     private static readonly List<TwitchCommand> DefaultCommands =
     [

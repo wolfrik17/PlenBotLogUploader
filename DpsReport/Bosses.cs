@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +14,7 @@ namespace PlenBotLogUploader.DpsReport;
 /// </summary>
 internal static class Bosses
 {
-    internal static string JsonFileLocation => $@"{ApplicationSettings.LocalDir}\boss_data.json";
+    internal static string JsonFileLocation => Path.Combine(ApplicationSettings.LocalDir, "boss_data.json");
 
     /// <summary>
     ///     Returns a list with all encounters.

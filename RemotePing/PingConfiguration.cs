@@ -1,4 +1,4 @@
-﻿using Hardstuck.Http;
+using Hardstuck.Http;
 using Newtonsoft.Json;
 using PlenBotLogUploader.DpsReport;
 using PlenBotLogUploader.Tools;
@@ -13,29 +13,29 @@ using System.Web;
 
 namespace PlenBotLogUploader.RemotePing;
 
-internal sealed class PingConfiguration
+public sealed class PingConfiguration
 {
     [JsonProperty("isActive")]
-    internal bool Active { get; set; }
+    public bool Active { get; set; }
 
     [JsonProperty("name")]
-    internal string Name { get; set; } = "";
+    public string Name { get; set; } = "";
 
     [JsonProperty("url")]
-    internal string Url { get; set; } = "";
+    public string Url { get; set; } = "";
 
     [JsonProperty("method")]
-    internal PingMethod Method { get; set; } = PingMethod.Post;
+    public PingMethod Method { get; set; } = PingMethod.Post;
 
     [JsonProperty("sendAsJson")]
-    internal bool SendDataAsJson { get; set; } = true;
+    public bool SendDataAsJson { get; set; } = true;
 
     [JsonProperty("authentication")]
-    internal PingAuthentication Authentication { get; set; }
+    public PingAuthentication Authentication { get; set; }
 
-    internal async Task<bool> PingServerAsync(FormMain mainLink, DpsReportJson reportJson) => await PingServerAsync(this, mainLink, reportJson);
+    internal async Task<bool> PingServerAsync(ILogUploaderController mainLink, DpsReportJson reportJson) => await PingServerAsync(this, mainLink, reportJson);
 
-    private static async Task<bool> PingServerAsync(PingConfiguration configuration, FormMain mainLink, DpsReportJson reportJson)
+    private static async Task<bool> PingServerAsync(PingConfiguration configuration, ILogUploaderController mainLink, DpsReportJson reportJson)
     {
         var result = false;
         using var controller = new HttpClientController();

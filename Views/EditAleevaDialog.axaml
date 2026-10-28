@@ -1,0 +1,43 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:aleeva="using:PlenBotLogUploader.Aleeva"
+        mc:Ignorable="d" d:DesignWidth="460" d:DesignHeight="450"
+        x:Class="PlenBotLogUploader.Views.EditAleevaDialog"
+        Icon="/Resources/Icon.ico"
+        Title="Edit Aleeva Integration"
+        Width="460" Height="450"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*,Auto" Margin="20">
+        <StackPanel Grid.Row="0" Spacing="14">
+            <TextBlock Text="Aleeva Server &amp; Channel Details" FontSize="16" FontWeight="SemiBold" />
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Name:" FontWeight="Medium" />
+                <TextBox x:Name="TextBoxName" Watermark="e.g. Guild Raid Channel" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Server ID:" FontWeight="Medium" />
+                <TextBox x:Name="TextBoxServer" Watermark="Discord Server ID" />
+            </StackPanel>
+
+            <StackPanel Spacing="4">
+                <TextBlock Text="Channel ID:" FontWeight="Medium" />
+                <TextBox x:Name="TextBoxChannel" Watermark="Discord Channel ID" />
+            </StackPanel>
+
+            <CheckBox x:Name="CheckBoxActive" Content="Active" IsChecked="True" />
+            <CheckBox x:Name="CheckBoxNotification" Content="Send notification message to channel" IsChecked="True" />
+            <CheckBox x:Name="CheckBoxSuccessOnly" Content="Send on success only" />
+        </StackPanel>
+
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" Margin="0,14,0,0">
+            <Button Grid.Column="1" Content="Save" Classes="accent" Click="OnSaveClick" Margin="0,0,8,0" Width="80" />
+            <Button Grid.Column="2" Content="Cancel" Click="OnCancelClick" Width="80" />
+        </Grid>
+    </Grid>
+</Window>

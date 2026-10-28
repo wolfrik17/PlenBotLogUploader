@@ -1,0 +1,28 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="PlenBotLogUploader.Views.EditGw2ApiDialog"
+        Title="Edit Guild Wars 2 API Key"
+        Width="480" Height="260"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+    <Grid RowDefinitions="*,Auto" Margin="18">
+        <StackPanel Grid.Row="0" Spacing="14">
+            <TextBlock Text="Guild Wars 2 API Key Configuration" FontSize="16" FontWeight="SemiBold" />
+            <TextBlock Text="API keys are used for automatic character/account identification and Hardstuck build code generation." 
+                       TextWrapping="Wrap" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="12" />
+
+            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto">
+                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name / Account:" VerticalAlignment="Center" Margin="0,0,0,10" />
+                <TextBox Grid.Row="0" Grid.Column="1" x:Name="TextBoxName" Watermark="e.g. Main Account (Player.1234)" Margin="0,0,0,10" />
+
+                <TextBlock Grid.Row="1" Grid.Column="0" Text="API Key:" VerticalAlignment="Center" />
+                <TextBox Grid.Row="1" Grid.Column="1" x:Name="TextBoxApiKey" Watermark="72-character API key from arena.net..." PasswordChar="*" />
+            </Grid>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
+            <Button Content="Cancel" Click="OnCancelClick" Width="80" HorizontalContentAlignment="Center" />
+            <Button Content="Save" Click="OnSaveClick" Width="80" Classes="accent" HorizontalContentAlignment="Center" />
+        </StackPanel>
+    </Grid>
+</Window>

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 
 namespace PlenBotLogUploader.AppSettings;
@@ -10,6 +10,8 @@ internal sealed class ApplicationSettingsUpload
 
     [JsonProperty("detailedWvW")]
     internal bool DetailedWvw { get; set; }
+
+    internal bool DetailedWvW { get => DetailedWvw; set => DetailedWvw = value; }
 
     [JsonProperty("dpsReportServer")]
     internal DpsReportServer DpsReportServer { get; set; } = DpsReportServer.B;

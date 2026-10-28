@@ -1,6 +1,6 @@
-﻿namespace PlenBotLogUploader.DiscordApi;
+namespace PlenBotLogUploader.DiscordApi;
 
-internal enum DiscordWebhookDataLogSummaryType
+public enum DiscordWebhookDataLogSummaryType
 {
     None = 0,
     SquadOnly = 1,

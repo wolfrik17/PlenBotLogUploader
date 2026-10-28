@@ -1,4 +1,4 @@
-﻿using Hardstuck.Http;
+using Hardstuck.Http;
 using Newtonsoft.Json;
 using PlenBotLogUploader.Teams;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace PlenBotLogUploader.DiscordApi;
 
 [JsonObject(MemberSerialization.OptIn)]
-internal sealed class DiscordWebhookData
+public sealed class DiscordWebhookData
 {
     private Team team;
     /// <summary>

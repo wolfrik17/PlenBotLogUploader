@@ -1,6 +1,6 @@
-﻿namespace PlenBotLogUploader.Twitch;
+namespace PlenBotLogUploader.Twitch;
 
-internal enum TwitchResponseType
+public enum TwitchResponseType
 {
     Plain,
     ReplyAt,

@@ -1,18 +1,18 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace PlenBotLogUploader.RemotePing;
 
-internal sealed class PingAuthentication
+public sealed class PingAuthentication
 {
     [JsonProperty("isActive")]
-    internal bool Active { get; set; }
+    public bool Active { get; set; }
 
     [JsonProperty("useAsAuth")]
-    internal bool UseAsAuth { get; set; }
+    public bool UseAsAuth { get; set; }
 
     [JsonProperty("authName")]
-    internal string AuthName { get; set; } = "";
+    public string AuthName { get; set; } = "";
 
     [JsonProperty("authToken")]
-    internal string AuthToken { get; set; } = "";
+    public string AuthToken { get; set; } = "";
 }

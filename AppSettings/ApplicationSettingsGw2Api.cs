@@ -1,4 +1,4 @@
-﻿using Hardstuck.Http;
+using Hardstuck.Http;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 namespace PlenBotLogUploader.AppSettings;
 
 [JsonObject(MemberSerialization.OptIn)]
-internal sealed class ApplicationSettingsGw2Api
+public sealed class ApplicationSettingsGw2Api
 {
     [JsonProperty("name")]
-    internal string Name { get; set; }
+    public string Name { get; set; }
 
     [JsonProperty("apikey")]
-    internal string ApiKey { get; set; }
+    public string ApiKey { get; set; }
 
-    internal bool Valid { get; set; } = true;
+    public bool Valid { get; set; } = true;
 
     internal List<string> Characters { get; set; } = [];
 

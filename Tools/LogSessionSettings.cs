@@ -1,4 +1,4 @@
-﻿using PlenBotLogUploader.DiscordApi;
+using PlenBotLogUploader.DiscordApi;
 using System;
 using System.Collections.Generic;
 
@@ -60,4 +60,6 @@ internal sealed class LogSessionSettings
     ///     Selected webhooks to be executed
     /// </summary>
     internal List<DiscordWebhookData> SelectedWebhooks { get; set; } = [];
+
+    internal bool SaveToFile { get; set; }
 }

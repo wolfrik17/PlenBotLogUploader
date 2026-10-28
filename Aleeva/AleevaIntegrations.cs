@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using System.Collections.Generic;
 using System.IO;
@@ -12,7 +12,7 @@ namespace PlenBotLogUploader.Aleeva;
 /// </summary>
 internal static class AleevaIntegrations
 {
-    private static readonly string JsonFileLocation = $@"{ApplicationSettings.LocalDir}\aleeva_integrations.json";
+    private static string JsonFileLocation => Path.Combine(ApplicationSettings.LocalDir, "aleeva_integrations.json");
 
     /// <summary>
     ///     Returns the list with all Aleeva integrations.
@@ -55,6 +55,8 @@ internal static class AleevaIntegrations
 
         File.WriteAllText(JsonFileLocation, jsonString, Encoding.UTF8);
     }
+
+    internal static void Load() => LoadAleevaIntegrations();
 
     internal static void LoadAleevaIntegrations()
     {

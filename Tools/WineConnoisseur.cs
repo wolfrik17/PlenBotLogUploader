@@ -13,13 +13,25 @@ public static class WineConnoisseur
 
     public static bool IsRunningUnderWine()
     {
-        var ntdll = GetModuleHandle("ntdll.dll");
-        if (ntdll == IntPtr.Zero)
+        if (!OperatingSystem.IsWindows())
         {
             return false;
         }
 
-        var wineFunc = GetProcAddress(ntdll, "wine_get_version");
-        return wineFunc != IntPtr.Zero;
+        try
+        {
+            var ntdll = GetModuleHandle("ntdll.dll");
+            if (ntdll == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            var wineFunc = GetProcAddress(ntdll, "wine_get_version");
+            return wineFunc != IntPtr.Zero;
+        }
+        catch
+        {
+            return false;
+        }
     }
 }

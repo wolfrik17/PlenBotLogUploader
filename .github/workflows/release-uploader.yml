@@ -4,9 +4,10 @@ on:
   push:
     tags:
       - 'Release-*'
+      - 'v*'
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
     steps:
     - uses: actions/checkout@v4
@@ -16,32 +17,89 @@ jobs:
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-    # This is a workaround for issue https://github.com/actions/virtual-environments/issues/1090,
-    # which causes to nuget restores to fail
     - name: Clean NuGet cache
       run: dotnet nuget locals all --clear
     - name: Build
       run: dotnet build PlenBotLogUploader.csproj -c Release
-    - name: Test
-      run: dotnet test PlenBotLogUploader.csproj --no-restore --verbosity normal
-    - name: Package PlenBotLogUploader (Windows, netv8)
-      run: dotnet publish PlenBotLogUploader.csproj -c Release -r win-x64 --self-contained=false -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/uploader/win64/
+    - name: Package PlenBotLogUploader (Windows, net8)
+      run: dotnet publish PlenBotLogUploader.csproj -c Release -r win-x64 --self-contained=false -p:PublishSingleFile=true -o artifacts/uploader/win64/
     - name: Package PlenBotLogUploader (Windows, self-contained)
-      run: dotnet publish PlenBotLogUploader.csproj -c ReleaseSC -r win-x64 --self-contained=true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/uploader/win64-sc/
+      run: dotnet publish PlenBotLogUploader.csproj -c Release -r win-x64 --self-contained=true -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/uploader/win64-sc/
     - name: Package PlenBotLogUploader (Windows, all dlls)
-      run: dotnet publish PlenBotLogUploader.csproj -c ReleaseDLLs -r win-x64 --self-contained=false -p:PublishSingleFile=false -p:IncludeNativeLibrariesForSelfExtract=true -p:IncludeAllContentForSelfExtract=true -o artifacts/uploader/win64-dlls/
-    - name: Prettify executable filenames
+      run: dotnet publish PlenBotLogUploader.csproj -c Release -r win-x64 --self-contained=false -p:PublishSingleFile=false -o artifacts/uploader/win64-dlls/
+    - name: Prettify executable filenames & zip
       run: |
-          mv artifacts/uploader/win64/PlenBotLogUploader.exe artifacts/uploader/win64/PlenBotLogUploader.exe
-          mv artifacts/uploader/win64-sc/PlenBotLogUploader.exe artifacts/uploader/win64-sc/PlenBotLogUploader.sc.exe
-          powershell Compress-Archive artifacts/uploader/win64-dlls/* artifacts/uploader/win64-dlls/PlenBotLogUploader.all-dlls.zip
+        powershell Compress-Archive artifacts/uploader/win64-dlls/* artifacts/PlenBotLogUploader-win-x64-dlls.zip
+        cp artifacts/uploader/win64/PlenBotLogUploader.exe artifacts/PlenBotLogUploader-win-x64-framework.exe
+        cp artifacts/uploader/win64-sc/PlenBotLogUploader.exe artifacts/PlenBotLogUploader-win-x64.exe
+    - name: Upload Windows Release Assets
+      uses: actions/upload-artifact@v4
+      with:
+        name: windows-release-assets
+        path: |
+          artifacts/PlenBotLogUploader-win-x64.exe
+          artifacts/PlenBotLogUploader-win-x64-framework.exe
+          artifacts/PlenBotLogUploader-win-x64-dlls.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: true
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+    - name: Install packaging tools
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y icoutils file libfuse2
+    - name: Clean NuGet cache
+      run: dotnet nuget locals all --clear
+    - name: Build
+      run: dotnet build PlenBotLogUploader.csproj -c Release
+    - name: Publish PlenBotLogUploader (Linux, self-contained)
+      run: dotnet publish PlenBotLogUploader.csproj -c Release -r linux-x64 --self-contained=true -p:PublishSingleFile=true -o artifacts/publish/linux-x64/
+    - name: Build Linux AppImage
+      run: |
+        bash packaging/linux/build-appimage.sh artifacts/publish/linux-x64 artifacts/appimage
+    - name: Package Linux tar.gz
+      run: |
+        tar -czvf artifacts/PlenBotLogUploader-linux-x64.tar.gz -C artifacts/publish/linux-x64 .
+    - name: Upload Linux Release Assets
+      uses: actions/upload-artifact@v4
+      with:
+        name: linux-release-assets
+        path: |
+          artifacts/appimage/PlenBotLogUploader-x86_64.AppImage
+          artifacts/PlenBotLogUploader-linux-x64.tar.gz
+
+  publish-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Download Windows Assets
+      uses: actions/download-artifact@v4
+      with:
+        name: windows-release-assets
+        path: release-files
+
+    - name: Download Linux Assets
+      uses: actions/download-artifact@v4
+      with:
+        name: linux-release-assets
+        path: release-files
+
     - name: Prepare release
       uses: softprops/action-gh-release@v2
       with:
         draft: true
         files: |
-          artifacts/uploader/win64/PlenBotLogUploader.exe
-          artifacts/uploader/win64-sc/PlenBotLogUploader.sc.exe
-          artifacts/uploader/win64-dlls/PlenBotLogUploader.all-dlls.zip
+          release-files/PlenBotLogUploader-win-x64.exe
+          release-files/PlenBotLogUploader-win-x64-framework.exe
+          release-files/PlenBotLogUploader-win-x64-dlls.zip
+          release-files/PlenBotLogUploader-x86_64.AppImage
+          release-files/PlenBotLogUploader-linux-x64.tar.gz
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

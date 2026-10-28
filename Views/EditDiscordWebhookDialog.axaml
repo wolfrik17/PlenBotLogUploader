@@ -1,0 +1,73 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:discord="using:PlenBotLogUploader.DiscordApi"
+        mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="550"
+        x:Class="PlenBotLogUploader.Views.EditDiscordWebhookDialog"
+        Icon="/Resources/Icon.ico"
+        Title="Edit Discord Webhook"
+        Width="520" Height="560"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner">
+
+    <Grid RowDefinitions="*,Auto" Margin="20">
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Spacing="14">
+                <TextBlock Text="Discord Webhook Configuration" FontSize="16" FontWeight="SemiBold" />
+
+                <!-- Name -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Webhook Name:" FontWeight="Medium" />
+                    <TextBox x:Name="TextBoxName" Watermark="e.g. Raid Squad Webhook" />
+                </StackPanel>
+
+                <!-- URL -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Webhook URL:" FontWeight="Medium" />
+                    <TextBox x:Name="TextBoxUrl" Watermark="https://discord.com/api/webhooks/..." />
+                </StackPanel>
+
+                <!-- Active -->
+                <CheckBox x:Name="CheckBoxActive" Content="Active (posts logs)" IsChecked="True" />
+
+                <!-- Success / Failure Toggle -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Post Condition:" FontWeight="Medium" />
+                    <ComboBox x:Name="ComboBoxSuccessToggle" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="On Success and Failure" />
+                        <ComboBoxItem Content="On Success Only" />
+                        <ComboBoxItem Content="On Fail Only" />
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Summary Style -->
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Embed Summary Style:" FontWeight="Medium" />
+                    <ComboBox x:Name="ComboBoxSummaryType" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="Squad and Players summary" />
+                        <ComboBoxItem Content="Squad only" />
+                        <ComboBoxItem Content="Players only" />
+                        <ComboBoxItem Content="None (simple link only)" />
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Filter Checkboxes -->
+                <StackPanel Spacing="6">
+                    <TextBlock Text="Include Encounters:" FontWeight="Medium" />
+                    <CheckBox x:Name="CheckBoxNormalLogs" Content="Include Normal mode logs" IsChecked="True" />
+                    <CheckBox x:Name="CheckBoxCmLogs" Content="Include Challenge Mode (CM) logs" IsChecked="True" />
+                    <CheckBox x:Name="CheckBoxLegendaryCmLogs" Content="Include Legendary Challenge Mode (LCM) logs" IsChecked="True" />
+                    <CheckBox x:Name="CheckBoxAllowUnknown" Content="Allow unknown boss IDs" />
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <!-- Bottom Buttons -->
+        <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto" Margin="0,14,0,0">
+            <Button Grid.Column="0" Content="Test Webhook" Click="OnTestClick" />
+            <Button Grid.Column="2" Content="Save" Classes="accent" Click="OnSaveClick" Margin="0,0,8,0" Width="80" />
+            <Button Grid.Column="3" Content="Cancel" Click="OnCancelClick" Width="80" />
+        </Grid>
+    </Grid>
+</Window>

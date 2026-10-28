@@ -1,4 +1,4 @@
-﻿using Hardstuck.Http;
+using Hardstuck.Http;
 using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using PlenBotLogUploader.GitHub;
@@ -13,17 +13,17 @@ using System.Threading.Tasks;
 namespace PlenBotLogUploader.ArcDps;
 
 [JsonObject(MemberSerialization.OptIn)]
-internal sealed class ArcDpsComponent
+public sealed class ArcDpsComponent
 {
     internal static List<ArcDpsComponent> All { get; private set; } = [];
 
     [JsonProperty("type")]
-    internal ArcDpsComponentType Type { get; set; }
+    public ArcDpsComponentType Type { get; set; }
 
     [JsonProperty("location")]
-    internal string RelativeLocation { get; set; }
+    public string RelativeLocation { get; set; }
 
-    internal string Repository => Type switch
+    public string Repository => Type switch
     {
         ArcDpsComponentType.Mechanics => "knoxfighter/GW2-ArcDPS-Mechanics-Log",
         ArcDpsComponentType.BoonTable => "knoxfighter/GW2-ArcDPS-Boon-Table",
@@ -51,15 +51,16 @@ internal sealed class ArcDpsComponent
         _ => null,
     };
 
-    internal static void SerialiseAll(string applicationDirectory) => File.WriteAllText($"{applicationDirectory}arcdps_components.json", JsonConvert.SerializeObject(All, Formatting.Indented));
+    internal static void SerialiseAll(string applicationDirectory) => File.WriteAllText(Path.Combine(applicationDirectory, "arcdps_components.json"), JsonConvert.SerializeObject(All, Formatting.Indented));
 
     internal static List<ArcDpsComponent> DeserialiseAll(string applicationDirectory)
     {
-        if (!File.Exists($"{applicationDirectory}arcdps_components.json"))
+        var filePath = Path.Combine(applicationDirectory, "arcdps_components.json");
+        if (!File.Exists(filePath))
         {
             return All;
         }
-        var componentsFile = File.ReadAllText($"{applicationDirectory}arcdps_components.json");
+        var componentsFile = File.ReadAllText(filePath);
         All = JsonConvert.DeserializeObject<List<ArcDpsComponent>>(componentsFile);
         return All;
     }

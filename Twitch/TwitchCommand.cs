@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using PlenBotLogUploader.Tools;
 using System.Collections.Generic;
 using System.Text;
@@ -7,21 +7,21 @@ using System.Text.RegularExpressions;
 namespace PlenBotLogUploader.Twitch;
 
 [JsonObject(MemberSerialization.OptIn)]
-internal class TwitchCommand : IListViewItemInfo<TwitchCommand>
+public class TwitchCommand : IListViewItemInfo<TwitchCommand>
 {
     private string _command = "";
 
     [JsonProperty("enabled")]
-    internal bool Enabled { get; set; }
+    public bool Enabled { get; set; }
 
     [JsonProperty("name")]
-    internal string Name { get; set; } = "";
+    public string Name { get; set; } = "";
 
     [JsonProperty("isRegEx")]
-    internal bool IsRegEx { get; set; }
+    public bool IsRegEx { get; set; }
 
     [JsonProperty("command")]
-    internal string Command
+    public string Command
     {
         get => _command;
         set
@@ -38,18 +38,16 @@ internal class TwitchCommand : IListViewItemInfo<TwitchCommand>
     internal Regex Regex { get; set; }
 
     [JsonProperty("response")]
-    internal string Response { get; set; } = "";
+    public string Response { get; set; } = "";
 
     [JsonProperty("responseType")]
-    internal TwitchResponseType ResponseType { get; set; } = TwitchResponseType.Plain;
+    public TwitchResponseType ResponseType { get; set; } = TwitchResponseType.Plain;
 
     string IListViewItemInfo<TwitchCommand>.NameToDisplay => Name;
 
     string IListViewItemInfo<TwitchCommand>.TextToDisplay => Name;
 
     bool IListViewItemInfo<TwitchCommand>.CheckedToDisplay => Enabled;
-
-    List<ListViewItemCustom<TwitchCommand>> IListViewItemInfo<TwitchCommand>.ConnectedItems { get; } = [];
 
     internal string FormattedResponse(string receiver, Dictionary<string, string> valuesToChange)
     {
