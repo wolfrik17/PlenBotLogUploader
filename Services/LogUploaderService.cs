@@ -132,6 +132,18 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
             catch { }
         }
 
+        // Auto-detect arcDPS logs directory if not set or missing
+        if (string.IsNullOrWhiteSpace(ApplicationSettings.Current.LogsLocation) || !Directory.Exists(ApplicationSettings.Current.LogsLocation))
+        {
+            var detected = ArcLogHelper.TryDetectArcLogsLocation();
+            if (!string.IsNullOrWhiteSpace(detected) && Directory.Exists(detected))
+            {
+                ApplicationSettings.Current.LogsLocation = detected;
+                ApplicationSettings.Current.Save();
+                AddToText($">>> Auto-detected arcDPS combat logs folder: {detected}");
+            }
+        }
+
         // Initialize ArcLogs observer if directory is set
         if (!string.IsNullOrWhiteSpace(ApplicationSettings.Current.LogsLocation) && Directory.Exists(ApplicationSettings.Current.LogsLocation))
         {
@@ -167,9 +179,62 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
             ? ArcLogsChangeObserverMode.Polling
             : ArcLogsChangeObserverMode.FileSystemWatcher;
 
-        _watcher.InitAndStart(directory, mode);
-        AddToText($">>> Monitoring arcDPS logs at: {directory} (Mode: {mode})");
-        MonitoringStateChanged?.Invoke(true);
+        try
+        {
+            _watcher.InitAndStart(directory, mode);
+            AddToText($">>> Monitoring arcDPS logs at: {directory} (Mode: {mode})");
+            Dispatcher.UIThread.Post(() => MonitoringStateChanged?.Invoke(true));
+            ScanExistingLogs(directory);
+        }
+        catch (Exception ex)
+        {
+            AddToText($">>> Failed to start monitoring with {mode}: {ex.Message}. Falling back to polling mode...");
+            try
+            {
+                _watcher?.Dispose();
+                _watcher = new ArcLogsChangeObserver(OnLogCreated);
+                _watcher.InitAndStart(directory, ArcLogsChangeObserverMode.Polling);
+                ApplicationSettings.Current.UsePollingForLogs = true;
+                ApplicationSettings.Current.Save();
+                AddToText($">>> Monitoring arcDPS logs at: {directory} (Mode: Polling)");
+                Dispatcher.UIThread.Post(() => MonitoringStateChanged?.Invoke(true));
+                ScanExistingLogs(directory);
+            }
+            catch (Exception ex2)
+            {
+                AddToText($">>> Failed to start monitoring: {ex2.Message}");
+                _watcher?.Dispose();
+                _watcher = null;
+                Dispatcher.UIThread.Post(() => MonitoringStateChanged?.Invoke(false));
+            }
+        }
+    }
+
+    public void ScanExistingLogs(string directory)
+    {
+        if (string.IsNullOrWhiteSpace(directory) || !Directory.Exists(directory))
+        {
+            return;
+        }
+
+        Task.Run(() =>
+        {
+            try
+            {
+                var count = 0;
+                foreach (var file in Directory.EnumerateFiles(directory, "*.*", SearchOption.AllDirectories))
+                {
+                    if (file.EndsWith(".evtc", StringComparison.OrdinalIgnoreCase) ||
+                        file.EndsWith(".zevtc", StringComparison.OrdinalIgnoreCase))
+                    {
+                        count++;
+                    }
+                }
+                _logsCount = count;
+                UpdateLogCount();
+            }
+            catch { }
+        });
     }
 
     public void StopMonitoring()
@@ -179,7 +244,11 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
             _watcher.Dispose();
             _watcher = null;
             AddToText(">>> Log monitoring stopped.");
-            MonitoringStateChanged?.Invoke(false);
+            Dispatcher.UIThread.Post(() => MonitoringStateChanged?.Invoke(false));
+        }
+        else
+        {
+            Dispatcher.UIThread.Post(() => MonitoringStateChanged?.Invoke(false));
         }
     }
 

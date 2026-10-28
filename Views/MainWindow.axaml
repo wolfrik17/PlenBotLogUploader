@@ -39,7 +39,7 @@
                 <!-- Status Badges -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <!-- Monitoring Badge -->
-                    <Border CornerRadius="12" Padding="10,4" Background="{DynamicResource SystemAccentColor}">
+                    <Border CornerRadius="12" Padding="10,4" Background="{Binding MonitoringBadgeBackground}">
                         <TextBlock Text="{Binding MonitoringStatusText}" 
                                    Foreground="White" FontSize="12" FontWeight="SemiBold" />
                     </Border>
@@ -117,16 +117,31 @@
                 <!-- 0: DASHBOARD VIEW -->
                 <Grid RowDefinitions="Auto,Auto,*,220" Margin="16">
                     <!-- Logs Folder Path Banner -->
-                    <Border Grid.Row="0" Margin="0,0,0,12" Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
-                            BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1"
-                            CornerRadius="8" Padding="14,10">
-                        <Grid ColumnDefinitions="Auto,*,Auto,Auto">
-                            <TextBlock Grid.Column="0" Text="arcDPS Logs Folder:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
-                            <TextBox Grid.Column="1" Text="{Binding LogsLocation}" IsReadOnly="True" VerticalAlignment="Center" Margin="0,0,8,0" />
-                            <Button Grid.Column="2" Content="Browse..." Command="{Binding BrowseLogsFolderCommand}" Margin="0,0,6,0" />
-                            <Button Grid.Column="3" Content="Open Folder" Command="{Binding OpenLogsFolderCommand}" />
-                        </Grid>
-                    </Border>
+                    <StackPanel Grid.Row="0" Margin="0,0,0,12" Spacing="8">
+                        <Border Background="{DynamicResource SystemControlBackgroundAltHighBrush}"
+                                BorderBrush="{DynamicResource SystemControlForegroundBaseLowBrush}" BorderThickness="1"
+                                CornerRadius="8" Padding="14,10">
+                            <Grid ColumnDefinitions="Auto,*,Auto,Auto">
+                                <TextBlock Grid.Column="0" Text="arcDPS Logs Folder:" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,10,0" />
+                                <TextBox Grid.Column="1" Text="{Binding LogsLocation}" IsReadOnly="True" VerticalAlignment="Center" Margin="0,0,8,0" 
+                                         Watermark="Select folder containing arcDPS .evtc / .zevtc combat logs..." />
+                                <Button Grid.Column="2" Content="Browse..." Command="{Binding BrowseLogsFolderCommand}" Margin="0,0,6,0" />
+                                <Button Grid.Column="3" Content="Open Folder" Command="{Binding OpenLogsFolderCommand}" />
+                            </Grid>
+                        </Border>
+
+                        <!-- Notice when no folder is selected -->
+                        <Border IsVisible="{Binding HasNoLogsLocation}"
+                                Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}"
+                                BorderBrush="#FF9800" BorderThickness="1"
+                                CornerRadius="8" Padding="12,8">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <TextBlock Text="⚠️" FontSize="16" VerticalAlignment="Center" />
+                                <TextBlock Text="No arcDPS combat logs folder configured. Click 'Browse...' or 'Start Monitoring' to select your logs folder." 
+                                           FontWeight="Medium" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
 
                     <!-- Stat Cards & Drag & Drop Zone -->
                     <Grid Grid.Row="1" Margin="0,0,0,12" ColumnDefinitions="*,*,*,2*">

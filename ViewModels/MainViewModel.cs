@@ -50,6 +50,8 @@ public partial class MainViewModel : ViewModelBase
     public string SessionPauseButtonText => IsSessionPaused ? "Resume Session" : "Pause Session";
     public string TwitchConnectButtonText => IsTwitchConnected ? "Disconnect" : "Connect";
     public string MonitoringStatusText => IsMonitoring ? "Monitoring: Active" : "Monitoring: Stopped";
+    public string MonitoringBadgeBackground => IsMonitoring ? "#2E7D32" : "#757575";
+    public bool HasNoLogsLocation => string.IsNullOrWhiteSpace(LogsLocation) || !Directory.Exists(LogsLocation);
     public string SessionStatusText => IsSessionRunning 
         ? (IsSessionPaused ? "Session: Paused" : "Session: Active") 
         : "Session: Inactive";
@@ -58,6 +60,12 @@ public partial class MainViewModel : ViewModelBase
     {
         OnPropertyChanged(nameof(MonitoringButtonText));
         OnPropertyChanged(nameof(MonitoringStatusText));
+        OnPropertyChanged(nameof(MonitoringBadgeBackground));
+    }
+
+    partial void OnLogsLocationChanged(string value)
+    {
+        OnPropertyChanged(nameof(HasNoLogsLocation));
     }
 
     partial void OnIsSessionRunningChanged(bool value)
@@ -290,19 +298,26 @@ public partial class MainViewModel : ViewModelBase
     }
 
     [RelayCommand]
-    private void ToggleMonitoring()
+    private async Task ToggleMonitoring()
     {
         if (IsMonitoring)
         {
             _service.StopMonitoring();
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(LogsLocation) || !Directory.Exists(LogsLocation))
+        {
+            _service.AddToText(">>> No arcDPS logs folder set. Please select the folder containing your .evtc/.zevtc logs.");
+            await BrowseLogsFolderAsync();
+            if (string.IsNullOrWhiteSpace(LogsLocation) || !Directory.Exists(LogsLocation))
+            {
+                _service.AddToText(">>> Monitoring not started: No folder selected.");
+                return;
+            }
         }
         else
         {
-            if (string.IsNullOrWhiteSpace(LogsLocation))
-            {
-                _service.AddToText(">>> Please set a valid arcDPS combat logs folder first.");
-                return;
-            }
             _service.StartMonitoring(LogsLocation);
         }
     }
@@ -315,12 +330,17 @@ public partial class MainViewModel : ViewModelBase
             var folder = await RequestBrowseFolderDialog.Invoke();
             if (!string.IsNullOrWhiteSpace(folder))
             {
-                LogsLocation = folder;
-                ApplicationSettings.Current.LogsLocation = folder;
-                ApplicationSettings.Current.Save();
-
-                if (IsMonitoring)
+                if (File.Exists(folder))
                 {
+                    folder = Path.GetDirectoryName(folder) ?? folder;
+                }
+
+                if (Directory.Exists(folder))
+                {
+                    LogsLocation = folder;
+                    ApplicationSettings.Current.LogsLocation = folder;
+                    ApplicationSettings.Current.Save();
+
                     _service.StartMonitoring(folder);
                 }
             }
@@ -333,6 +353,10 @@ public partial class MainViewModel : ViewModelBase
         if (!string.IsNullOrWhiteSpace(LogsLocation) && Directory.Exists(LogsLocation))
         {
             ProcessHelper.OpenDirectory(LogsLocation);
+        }
+        else
+        {
+            _service.AddToText(">>> Cannot open folder: No valid arcDPS combat logs folder set.");
         }
     }
 

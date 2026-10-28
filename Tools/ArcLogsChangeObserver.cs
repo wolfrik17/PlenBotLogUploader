@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -22,12 +22,21 @@ internal class ArcLogsChangeObserver(Action<FileInfo> logCreatedCallback) : IDis
         _disposed = true;
 
         _watcher?.Dispose();
+        _watcher = null;
         if (_pollThread is not null)
         {
-            _pollThreadCts!.Cancel();
-            _pollThread.Interrupt();
-            _pollThread.Join();
+            try
+            {
+                _pollThreadCts?.Cancel();
+                _pollThread.Interrupt();
+                _pollThread.Join(1000);
+            }
+            catch { }
+            _pollThread = null;
+            _pollThreadCts?.Dispose();
+            _pollThreadCts = null;
         }
+        _rootPath = null;
     }
     public void InitAndStart(string rootPath, ArcLogsChangeObserverMode mode = default)
     {
@@ -68,20 +77,27 @@ internal class ArcLogsChangeObserver(Action<FileInfo> logCreatedCallback) : IDis
 
             if (_pollThread is not null)
             {
-                _pollThreadCts!.Cancel();
-                _pollThread.Interrupt();
-                _pollThread.Join();
+                try
+                {
+                    _pollThreadCts?.Cancel();
+                    _pollThread.Interrupt();
+                    _pollThread.Join(1000);
+                }
+                catch { }
                 _pollThread = null;
+                _pollThreadCts?.Dispose();
+                _pollThreadCts = null;
             }
 
             _watcher = new FileSystemWatcher
             {
                 Filter = "*.*",
                 IncludeSubdirectories = true,
-                NotifyFilter = NotifyFilters.FileName,
+                NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite | NotifyFilters.CreationTime,
             };
-            // renaming is the last process done by arcdps to create evtc or zevtc files
+            // arcDPS creates or renames files to finalize evtc/zevtc logs
             _watcher.Renamed += OnWatcherEvent;
+            _watcher.Created += OnWatcherEvent;
             if (_rootPath is not null)
             {
                 _watcher.Path = _rootPath;
@@ -100,12 +116,20 @@ internal class ArcLogsChangeObserver(Action<FileInfo> logCreatedCallback) : IDis
     }
     private void OnWatcherEvent(object sender, FileSystemEventArgs e)
     {
-        if (!e.FullPath.EndsWith(".evtc") && !e.FullPath.EndsWith(".zevtc"))
+        if (!e.FullPath.EndsWith(".evtc", StringComparison.OrdinalIgnoreCase) && 
+            !e.FullPath.EndsWith(".zevtc", StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
 
-        logCreatedCallback(new FileInfo(e.FullPath));
+        try
+        {
+            if (File.Exists(e.FullPath))
+            {
+                logCreatedCallback(new FileInfo(e.FullPath));
+            }
+        }
+        catch { }
     }
     private void EnterPollThread()
     {
@@ -118,7 +142,8 @@ internal class ArcLogsChangeObserver(Action<FileInfo> logCreatedCallback) : IDis
             {
                 foreach (var filePath in Directory.EnumerateFiles(_rootPath!, "*.*", SearchOption.AllDirectories))
                 {
-                    if (!filePath.EndsWith(".evtc") && !filePath.EndsWith(".zevtc"))
+                    if (!filePath.EndsWith(".evtc", StringComparison.OrdinalIgnoreCase) && 
+                        !filePath.EndsWith(".zevtc", StringComparison.OrdinalIgnoreCase))
                     {
                         continue;
                     }
