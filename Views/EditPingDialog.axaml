@@ -3,45 +3,61 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:pings="using:PlenBotLogUploader.RemotePing"
-        mc:Ignorable="d" d:DesignWidth="480" d:DesignHeight="460"
+        mc:Ignorable="d" d:DesignWidth="490" d:DesignHeight="480"
         x:Class="PlenBotLogUploader.Views.EditPingDialog"
         Icon="/Resources/Icon.ico"
         Title="Edit Remote Ping Endpoint"
-        Width="480" Height="460"
+        Width="490" Height="480"
         CanResize="False"
         WindowStartupLocation="CenterOwner">
 
-    <Grid RowDefinitions="*,Auto" Margin="20">
-        <StackPanel Grid.Row="0" Spacing="14">
-            <TextBlock Text="Remote Ping Configuration" FontSize="16" FontWeight="SemiBold" />
-
-            <StackPanel Spacing="4">
-                <TextBlock Text="Endpoint Name:" FontWeight="Medium" />
-                <TextBox x:Name="TextBoxName" Watermark="e.g. Guild Raid Logger API" />
+    <Grid RowDefinitions="Auto,*,Auto" Margin="18">
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,14" Classes="card" CornerRadius="8" Padding="12,10">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <TextBlock Text="📡" FontSize="20" VerticalAlignment="Center" />
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="Remote HTTP Ping Configuration" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="Send HTTP webhook notifications to custom REST endpoints when fights finish." 
+                               FontSize="11.5" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                </StackPanel>
             </StackPanel>
+        </Border>
 
-            <StackPanel Spacing="4">
-                <TextBlock Text="URL:" FontWeight="Medium" />
-                <TextBox x:Name="TextBoxUrl" Watermark="https://myguild.com/api/logs" />
+        <!-- Form Card -->
+        <Border Grid.Row="1" Classes="card" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Endpoint Name:" FontWeight="Medium" FontSize="12" />
+                    <TextBox x:Name="TextBoxName" Watermark="e.g. Guild Raid Logger API" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Target URL:" FontWeight="Medium" FontSize="12" />
+                    <TextBox x:Name="TextBoxUrl" Watermark="https://myguild.com/api/logs" />
+                </StackPanel>
+
+                <StackPanel Spacing="4">
+                    <TextBlock Text="HTTP Method:" FontWeight="Medium" FontSize="12" />
+                    <ComboBox x:Name="ComboBoxMethod" HorizontalAlignment="Stretch">
+                        <ComboBoxItem Content="POST" />
+                        <ComboBoxItem Content="PUT" />
+                        <ComboBoxItem Content="GET" />
+                        <ComboBoxItem Content="DELETE" />
+                    </ComboBox>
+                </StackPanel>
+
+                <StackPanel Spacing="8" Margin="0,4,0,0">
+                    <CheckBox x:Name="CheckBoxActive" Content="Active (ping this endpoint on combat finish)" IsChecked="True" FontWeight="Medium" />
+                    <CheckBox x:Name="CheckBoxSendJson" Content="Send data formatted as JSON payload" IsChecked="True" />
+                </StackPanel>
             </StackPanel>
+        </Border>
 
-            <StackPanel Spacing="4">
-                <TextBlock Text="HTTP Method:" FontWeight="Medium" />
-                <ComboBox x:Name="ComboBoxMethod" HorizontalAlignment="Stretch">
-                    <ComboBoxItem Content="POST" />
-                    <ComboBoxItem Content="PUT" />
-                    <ComboBoxItem Content="GET" />
-                    <ComboBoxItem Content="DELETE" />
-                </ComboBox>
-            </StackPanel>
-
-            <CheckBox x:Name="CheckBoxActive" Content="Active (ping this server on log finish)" IsChecked="True" />
-            <CheckBox x:Name="CheckBoxSendJson" Content="Send data as JSON payload" IsChecked="True" />
-        </StackPanel>
-
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" Margin="0,14,0,0">
-            <Button Grid.Column="1" Content="Save" Classes="accent" Click="OnSaveClick" Margin="0,0,8,0" Width="80" />
-            <Button Grid.Column="2" Content="Cancel" Click="OnCancelClick" Width="80" />
+        <!-- Bottom Buttons -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" Margin="0,14,0,0">
+            <Button Grid.Column="1" Content="Save" Classes="accent" Click="OnSaveClick" Margin="0,0,8,0" Width="90" CornerRadius="6" />
+            <Button Grid.Column="2" Content="Cancel" Click="OnCancelClick" Width="90" CornerRadius="6" />
         </Grid>
     </Grid>
 </Window>

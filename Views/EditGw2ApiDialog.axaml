@@ -1,28 +1,44 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="PlenBotLogUploader.Views.EditGw2ApiDialog"
+        Icon="/Resources/Icon.ico"
         Title="Edit Guild Wars 2 API Key"
-        Width="480" Height="260"
+        Width="500" Height="300"
         WindowStartupLocation="CenterOwner"
         CanResize="False">
-    <Grid RowDefinitions="*,Auto" Margin="18">
-        <StackPanel Grid.Row="0" Spacing="14">
-            <TextBlock Text="Guild Wars 2 API Key Configuration" FontSize="16" FontWeight="SemiBold" />
-            <TextBlock Text="API keys are used for automatic character/account identification and Hardstuck build code generation." 
-                       TextWrapping="Wrap" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="12" />
 
-            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name / Account:" VerticalAlignment="Center" Margin="0,0,0,10" />
-                <TextBox Grid.Row="0" Grid.Column="1" x:Name="TextBoxName" Watermark="e.g. Main Account (Player.1234)" Margin="0,0,0,10" />
+    <Grid RowDefinitions="Auto,*,Auto" Margin="18">
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,14" Classes="card" CornerRadius="8" Padding="12,10">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <TextBlock Text="🔑" FontSize="20" VerticalAlignment="Center" />
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="Guild Wars 2 API Key" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="Used for automatic account detection and Hardstuck build codes." 
+                               FontSize="11.5" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="API Key:" VerticalAlignment="Center" />
-                <TextBox Grid.Row="1" Grid.Column="1" x:Name="TextBoxApiKey" Watermark="72-character API key from arena.net..." PasswordChar="*" />
-            </Grid>
-        </StackPanel>
+        <!-- Form Card -->
+        <Border Grid.Row="1" Classes="card" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Account / Name Label:" FontWeight="Medium" FontSize="12" />
+                    <TextBox x:Name="TextBoxName" Watermark="e.g. Main Account (Player.1234)" />
+                </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
-            <Button Content="Cancel" Click="OnCancelClick" Width="80" HorizontalContentAlignment="Center" />
-            <Button Content="Save" Click="OnSaveClick" Width="80" Classes="accent" HorizontalContentAlignment="Center" />
-        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="API Key:" FontWeight="Medium" FontSize="12" />
+                    <TextBox x:Name="TextBoxApiKey" Watermark="72-character API key from arena.net..." PasswordChar="*" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- Bottom Buttons -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" Margin="0,14,0,0">
+            <Button Grid.Column="1" Content="Save" Classes="accent" Click="OnSaveClick" Margin="0,0,8,0" Width="90" CornerRadius="6" />
+            <Button Grid.Column="2" Content="Cancel" Click="OnCancelClick" Width="90" CornerRadius="6" />
+        </Grid>
     </Grid>
 </Window>

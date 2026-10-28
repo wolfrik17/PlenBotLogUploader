@@ -36,6 +36,14 @@ public partial class MainWindow : Window
     {
         if (DataContext is MainViewModel vm)
         {
+            vm.ActivityLogs.CollectionChanged += (s, ev) =>
+            {
+                Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+                {
+                    ActivityLogScrollViewer?.ScrollToEnd();
+                });
+            };
+
             vm.RequestBrowseFolderDialog = async () =>
             {
                 var folders = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions

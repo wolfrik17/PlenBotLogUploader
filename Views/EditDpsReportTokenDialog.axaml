@@ -1,31 +1,46 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         x:Class="PlenBotLogUploader.Views.EditDpsReportTokenDialog"
+        Icon="/Resources/Icon.ico"
         Title="Edit dps.report User Token"
-        Width="480" Height="280"
+        Width="500" Height="340"
         WindowStartupLocation="CenterOwner"
         CanResize="False">
-    <Grid RowDefinitions="*,Auto" Margin="18">
-        <StackPanel Grid.Row="0" Spacing="14">
-            <TextBlock Text="dps.report User Token" FontSize="16" FontWeight="SemiBold" />
-            <TextBlock Text="User tokens associate uploads with your dps.report account for tracking logs across devices." 
-                       TextWrapping="Wrap" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" FontSize="12" />
 
-            <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto,Auto">
-                <TextBlock Grid.Row="0" Grid.Column="0" Text="Name / Label:" VerticalAlignment="Center" Margin="0,0,0,10" />
-                <TextBox Grid.Row="0" Grid.Column="1" x:Name="TextBoxName" Watermark="e.g. My Account / Main" Margin="0,0,0,10" />
+    <Grid RowDefinitions="Auto,*,Auto" Margin="18">
+        <!-- Header -->
+        <Border Grid.Row="0" Margin="0,0,0,14" Classes="card" CornerRadius="8" Padding="12,10">
+            <StackPanel Orientation="Horizontal" Spacing="10" VerticalAlignment="Center">
+                <TextBlock Text="📊" FontSize="20" VerticalAlignment="Center" />
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Text="dps.report User Token" FontSize="15" FontWeight="SemiBold" />
+                    <TextBlock Text="Associate uploaded fight logs directly with your dps.report account." 
+                               FontSize="11.5" Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-                <TextBlock Grid.Row="1" Grid.Column="0" Text="User Token:" VerticalAlignment="Center" Margin="0,0,0,10" />
-                <TextBox Grid.Row="1" Grid.Column="1" x:Name="TextBoxToken" Watermark="dps.report user token..." PasswordChar="*" Margin="0,0,0,10" />
+        <!-- Form Card -->
+        <Border Grid.Row="1" Classes="card" CornerRadius="8" Padding="14">
+            <StackPanel Spacing="12">
+                <StackPanel Spacing="4">
+                    <TextBlock Text="Name / Account Label:" FontWeight="Medium" FontSize="12" />
+                    <TextBox x:Name="TextBoxName" Watermark="e.g. Main Account / Static Guild" />
+                </StackPanel>
 
-                <TextBlock Grid.Row="2" Grid.Column="0" Text="Active:" VerticalAlignment="Center" />
-                <CheckBox Grid.Row="2" Grid.Column="1" x:Name="CheckBoxActive" Content="Use this token for uploads" IsChecked="True" />
-            </Grid>
-        </StackPanel>
+                <StackPanel Spacing="4">
+                    <TextBlock Text="dps.report User Token:" FontWeight="Medium" FontSize="12" />
+                    <TextBox x:Name="TextBoxToken" Watermark="dps.report user token string..." PasswordChar="*" />
+                </StackPanel>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
-            <Button Content="Cancel" Click="OnCancelClick" Width="80" HorizontalContentAlignment="Center" />
-            <Button Content="Save" Click="OnSaveClick" Width="80" Classes="accent" HorizontalContentAlignment="Center" />
-        </StackPanel>
+                <CheckBox x:Name="CheckBoxActive" Content="Active (use this token for future log uploads)" IsChecked="True" FontWeight="Medium" Margin="0,4,0,0" />
+            </StackPanel>
+        </Border>
+
+        <!-- Bottom Buttons -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" Margin="0,14,0,0">
+            <Button Grid.Column="1" Content="Save" Classes="accent" Click="OnSaveClick" Margin="0,0,8,0" Width="90" CornerRadius="6" />
+            <Button Grid.Column="2" Content="Cancel" Click="OnCancelClick" Width="90" CornerRadius="6" />
+        </Grid>
     </Grid>
 </Window>

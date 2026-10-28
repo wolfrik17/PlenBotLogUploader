@@ -16,7 +16,9 @@ public class LogUploadItem
     public string LocalFilePath { get; set; } = "";
 
     public string ResultBadge => Success ? "SUCCESS" : "FAIL";
+    public string ResultBackground => Success ? "#16A34A" : "#DC2626";
     public string ModeBadge => IsLegendaryCm ? "LCM" : IsCm ? "CM" : "Normal";
+    public string ModeBackground => IsLegendaryCm ? "#7C3AED" : IsCm ? "#D97706" : "#475569";
 }
 
 public class LogMessageItem
@@ -25,4 +27,18 @@ public class LogMessageItem
     public string TimestampString => Timestamp.ToString("HH:mm:ss");
     public string Message { get; set; } = "";
     public string Level { get; set; } = "Info"; // Info, Success, Warning, Error
+    public string LevelColor => Level switch
+    {
+        "Success" => "#22C55E",
+        "Warning" => "#F59E0B",
+        "Error" => "#EF4444",
+        _ => "#94A3B8"
+    };
+    public string LevelBadge => Level switch
+    {
+        "Success" => "✔",
+        "Warning" => "⚠",
+        "Error" => "✖",
+        _ => "ℹ"
+    };
 }

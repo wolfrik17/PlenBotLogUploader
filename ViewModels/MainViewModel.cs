@@ -56,6 +56,21 @@ public partial class MainViewModel : ViewModelBase
         ? (IsSessionPaused ? "Session: Paused" : "Session: Active") 
         : "Session: Inactive";
 
+    public bool HasRecentUploads => RecentUploads.Count > 0;
+    public bool HasNoRecentUploads => RecentUploads.Count == 0;
+    public bool HasDiscordWebhooks => DiscordWebhooksList.Count > 0;
+    public bool HasNoDiscordWebhooks => DiscordWebhooksList.Count == 0;
+    public bool HasTeams => TeamsList.Count > 0;
+    public bool HasNoTeams => TeamsList.Count == 0;
+    public bool HasGw2ApiKeys => Gw2ApiKeysList.Count > 0;
+    public bool HasNoGw2ApiKeys => Gw2ApiKeysList.Count == 0;
+    public bool HasRemotePings => RemotePingsList.Count > 0;
+    public bool HasNoRemotePings => RemotePingsList.Count == 0;
+    public bool HasAleevaIntegrations => AleevaIntegrationsList.Count > 0;
+    public bool HasNoAleevaIntegrations => AleevaIntegrationsList.Count == 0;
+    public bool HasUserTokens => UserTokensList.Count > 0;
+    public bool HasNoUserTokens => UserTokensList.Count == 0;
+
     partial void OnIsMonitoringChanged(bool value)
     {
         OnPropertyChanged(nameof(MonitoringButtonText));
@@ -202,6 +217,42 @@ public partial class MainViewModel : ViewModelBase
         };
         _service.TwitchStateChanged += val => IsTwitchConnected = val;
         _service.LogsCountChanged += val => LogsCount = val;
+
+        RecentUploads.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasRecentUploads));
+            OnPropertyChanged(nameof(HasNoRecentUploads));
+        };
+        DiscordWebhooksList.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasDiscordWebhooks));
+            OnPropertyChanged(nameof(HasNoDiscordWebhooks));
+        };
+        TeamsList.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasTeams));
+            OnPropertyChanged(nameof(HasNoTeams));
+        };
+        Gw2ApiKeysList.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasGw2ApiKeys));
+            OnPropertyChanged(nameof(HasNoGw2ApiKeys));
+        };
+        RemotePingsList.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasRemotePings));
+            OnPropertyChanged(nameof(HasNoRemotePings));
+        };
+        AleevaIntegrationsList.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasAleevaIntegrations));
+            OnPropertyChanged(nameof(HasNoAleevaIntegrations));
+        };
+        UserTokensList.CollectionChanged += (_, _) =>
+        {
+            OnPropertyChanged(nameof(HasUserTokens));
+            OnPropertyChanged(nameof(HasNoUserTokens));
+        };
 
         LoadSettingsAndData();
     }
@@ -430,6 +481,12 @@ public partial class MainViewModel : ViewModelBase
             SaveToFile = ApplicationSettings.Current.Session.SaveToFile,
         };
         await _service.StopSessionAsync(settings);
+    }
+
+    [RelayCommand]
+    private void OpenGitHub()
+    {
+        ProcessHelper.OpenUrl("https://github.com/Plenyx/PlenBotLogUploader");
     }
 
     [RelayCommand]

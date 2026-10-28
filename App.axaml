@@ -1,9 +1,122 @@
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="PlenBotLogUploader.App">
+    <Application.Resources>
+        <!-- Application-wide Brand Colors -->
+        <SolidColorBrush x:Key="BrandPrimary">#2563EB</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandPrimaryHover">#1D4ED8</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandSuccess">#16A34A</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandSuccessHover">#15803D</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandDanger">#DC2626</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandDangerHover">#B91C1C</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandWarning">#D97706</SolidColorBrush>
+        <SolidColorBrush x:Key="BrandPurple">#7C3AED</SolidColorBrush>
+    </Application.Resources>
+
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+
+        <!-- Base Button Styling: Rounded corners, comfortable padding -->
+        <Style Selector="Button">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="12,6" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+        </Style>
+
+        <!-- Primary / Accent Button -->
+        <Style Selector="Button.accent, Button.primary">
+            <Setter Property="Background" Value="{DynamicResource BrandPrimary}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.accent:pointerover, Button.primary:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BrandPrimaryHover}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Success Button -->
+        <Style Selector="Button.success">
+            <Setter Property="Background" Value="{DynamicResource BrandSuccess}" />
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+        </Style>
+        <Style Selector="Button.success:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BrandSuccessHover}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Danger Button -->
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="#FEE2E2" />
+            <Setter Property="Foreground" Value="{DynamicResource BrandDanger}" />
+            <Setter Property="BorderBrush" Value="#FCA5A5" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+        <Style Selector="Button.danger:pointerover">
+            <Setter Property="Background" Value="{DynamicResource BrandDanger}" />
+            <Setter Property="Foreground" Value="White" />
+        </Style>
+
+        <!-- Compact Table Action Button -->
+        <Style Selector="Button.compact">
+            <Setter Property="Padding" Value="8,3" />
+            <Setter Property="FontSize" Value="12" />
+            <Setter Property="CornerRadius" Value="5" />
+        </Style>
+
+        <!-- Input controls: Rounded corners -->
+        <Style Selector="TextBox">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="10,6" />
+        </Style>
+        <Style Selector="NumericUpDown">
+            <Setter Property="CornerRadius" Value="6" />
+        </Style>
+
+        <!-- Card Borders -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundAltHighBrush}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource SystemControlForegroundBaseLowBrush}" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="10" />
+            <Setter Property="Padding" Value="14" />
+        </Style>
+
+        <!-- Modern Sidebar ListBoxItem -->
+        <Style Selector="ListBox.sidebar ListBoxItem">
+            <Setter Property="CornerRadius" Value="8" />
+            <Setter Property="Margin" Value="4,2" />
+            <Setter Property="Padding" Value="12,9" />
+            <Setter Property="FontWeight" Value="Medium" />
+        </Style>
+
+        <!-- Modern TabControl Subtabs -->
+        <Style Selector="TabControl.modern-tabs TabItem">
+            <Setter Property="CornerRadius" Value="6" />
+            <Setter Property="Padding" Value="14,8" />
+            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="FontWeight" Value="Medium" />
+        </Style>
+
+        <!-- DataGrid Rounded Container and Header Styling -->
+        <Style Selector="DataGrid">
+            <Setter Property="CornerRadius" Value="8" />
+        </Style>
+        <Style Selector="DataGridColumnHeader">
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+        <Style Selector="DataGridRow">
+            <Setter Property="MinHeight" Value="34" />
+        </Style>
     </Application.Styles>
     <TrayIcon.Icons>
         <TrayIcons>
