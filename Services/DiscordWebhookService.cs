@@ -85,23 +85,38 @@ internal static class DiscordWebhookService
 
         if (reportJson.ExtraJson is not null)
         {
-            var squadPlayers = reportJson.ExtraJson.Players.Count(x => !x.FriendlyNpc && !x.NotInSquad);
-            var squadDamage = reportJson.ExtraJson.Players
-                .Where(x => !x.FriendlyNpc && !x.NotInSquad)
-                .Select(x => x.DpsTargets.Sum(y => y.Sum(z => z.Damage)))
-                .Sum();
-            var squadDps = reportJson.ExtraJson.Players
-                .Where(x => !x.FriendlyNpc && !x.NotInSquad)
-                .Select(x => x.DpsTargets.Sum(y => y.Sum(z => z.Dps)))
-                .Sum();
-            var squadDowns = reportJson.ExtraJson.Players
-                .Where(x => !x.FriendlyNpc && !x.NotInSquad)
-                .Select(x => x.Defenses[0].DownCount)
-                .Sum();
-            var squadDeaths = reportJson.ExtraJson.Players
-                .Where(x => !x.FriendlyNpc && !x.NotInSquad)
-                .Select(x => x.Defenses[0].DeadCount)
-                .Sum();
+            var squadPlayers = 0;
+            long squadDamage = 0;
+            long squadDps = 0;
+            long squadDowns = 0;
+            long squadDeaths = 0;
+
+            foreach (var p in reportJson.ExtraJson.Players)
+            {
+                if (p.FriendlyNpc || p.NotInSquad)
+                {
+                    continue;
+                }
+
+                squadPlayers++;
+                if (p.DpsTargets is not null)
+                {
+                    foreach (var targets in p.DpsTargets)
+                    {
+                        if (targets is null) continue;
+                        foreach (var target in targets)
+                        {
+                            squadDamage += target.Damage;
+                            squadDps += target.Dps;
+                        }
+                    }
+                }
+                if (p.Defenses?.Length > 0)
+                {
+                    squadDowns += p.Defenses[0].DownCount;
+                    squadDeaths += p.Defenses[0].DeadCount;
+                }
+            }
 
             var squadSummary = new TextTable(5, TableStyle, TableBorders);
             squadSummary.SetColumnWidthRange(0, 4, 4);
@@ -135,10 +150,32 @@ internal static class DiscordWebhookService
             if (reportJson.ExtraJson.Targets.Length > 1)
             {
                 var enemyPlayers = reportJson.ExtraJson.Targets.Length - 1;
-                var enemyDamage = reportJson.ExtraJson.Targets.Where(x => !x.IsFake).Select(x => x.DpsAll[0].Damage).Sum();
-                var enemyDps = reportJson.ExtraJson.Targets.Where(x => !x.IsFake).Select(x => x.DpsAll[0].Dps).Sum();
-                var enemyDowns = reportJson.ExtraJson.Players.Where(x => !x.FriendlyNpc && !x.NotInSquad).Select(x => x.StatsTargets.Select(y => y[0].Downed).Sum()).Sum();
-                var enemyDeaths = reportJson.ExtraJson.Players.Where(x => !x.FriendlyNpc && !x.NotInSquad).Select(x => x.StatsTargets.Select(y => y[0].Killed).Sum()).Sum();
+                long enemyDamage = 0;
+                long enemyDps = 0;
+                foreach (var t in reportJson.ExtraJson.Targets)
+                {
+                    if (t.IsFake) continue;
+                    if (t.DpsAll?.Length > 0)
+                    {
+                        enemyDamage += t.DpsAll[0].Damage;
+                        enemyDps += t.DpsAll[0].Dps;
+                    }
+                }
+
+                long enemyDowns = 0;
+                long enemyDeaths = 0;
+                foreach (var p in reportJson.ExtraJson.Players)
+                {
+                    if (p.FriendlyNpc || p.NotInSquad || p.StatsTargets is null) continue;
+                    foreach (var st in p.StatsTargets)
+                    {
+                        if (st?.Length > 0)
+                        {
+                            enemyDowns += st[0].Downed;
+                            enemyDeaths += st[0].Killed;
+                        }
+                    }
+                }
 
                 var enemySummary = new TextTable(5, TableStyle, TableBorders);
                 enemySummary.SetColumnWidthRange(0, 4, 4);
@@ -469,10 +506,21 @@ internal static class DiscordWebhookService
                 ? allWebhooks.Values.Except(logSessionSettings.SelectedWebhooks)
                 : allWebhooks.Values.Where(x => x.Active);
 
+        SessionTextConstructor.DiscordEmbeds defaultEmbeds = null;
+
         foreach (var webhook in webhooksToExecute)
         {
-            var satisfyingLogs = reportJson.Where(x => webhook.Team?.IsSatisfied(x.GetLogPlayers()) ?? true).ToList();
-            var discordEmbeds = SessionTextConstructor.ConstructSessionEmbeds(satisfyingLogs, logSessionSettings);
+            SessionTextConstructor.DiscordEmbeds discordEmbeds;
+            if (webhook.Team is null)
+            {
+                discordEmbeds = defaultEmbeds ??= SessionTextConstructor.ConstructSessionEmbeds(reportJson, logSessionSettings);
+            }
+            else
+            {
+                var satisfyingLogs = reportJson.Where(x => webhook.Team.IsSatisfied(x.GetLogPlayers())).ToList();
+                discordEmbeds = SessionTextConstructor.ConstructSessionEmbeds(satisfyingLogs, logSessionSettings);
+            }
+
             var embedsList = webhook.SuccessFailToggle switch
             {
                 DiscordWebhookDataSuccessToggle.OnSuccessOnly => discordEmbeds.Success,
@@ -505,7 +553,7 @@ internal static class DiscordWebhookService
             });
 
             using var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            await controller.HttpClientController.PostAsync(webhook.Url, content);
+            using var response = await controller.HttpClientController.PostAsync(webhook.Url, content);
         }
         catch (Exception ex)
         {

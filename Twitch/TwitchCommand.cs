@@ -10,6 +10,8 @@ namespace PlenBotLogUploader.Twitch;
 public class TwitchCommand : IListViewItemInfo<TwitchCommand>
 {
     private string _command = "";
+    private bool _isRegEx;
+    private Regex _regex;
 
     [JsonProperty("enabled")]
     public bool Enabled { get; set; }
@@ -18,7 +20,18 @@ public class TwitchCommand : IListViewItemInfo<TwitchCommand>
     public string Name { get; set; } = "";
 
     [JsonProperty("isRegEx")]
-    public bool IsRegEx { get; set; }
+    public bool IsRegEx
+    {
+        get => _isRegEx;
+        set
+        {
+            if (_isRegEx != value)
+            {
+                _isRegEx = value;
+                _regex = null;
+            }
+        }
+    }
 
     [JsonProperty("command")]
     public string Command
@@ -26,16 +39,25 @@ public class TwitchCommand : IListViewItemInfo<TwitchCommand>
         get => _command;
         set
         {
-            if (_command == value || value is null)
+            if (_command != value && value is not null)
             {
-                return;
+                _command = value;
+                _regex = null;
             }
-            _command = value;
-            Regex = IsRegEx ? new Regex(_command, RegexOptions.CultureInvariant | RegexOptions.Multiline | RegexOptions.IgnoreCase) : null;
         }
     }
 
-    internal Regex Regex { get; set; }
+    internal Regex Regex
+    {
+        get
+        {
+            if (!_isRegEx || string.IsNullOrWhiteSpace(_command))
+            {
+                return null;
+            }
+            return _regex ??= new Regex(_command, RegexOptions.CultureInvariant | RegexOptions.Multiline | RegexOptions.IgnoreCase);
+        }
+    }
 
     [JsonProperty("response")]
     public string Response { get; set; } = "";

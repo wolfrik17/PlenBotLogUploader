@@ -372,8 +372,7 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
                 if (statusCode == 429 || statusCode >= 500)
                 {
                     AddToText($">: Unable to upload {fileName}: server error ({statusCode}). Added to retry queue.");
-                    LogReuploader.FailedLogs.Add(file);
-                    LogReuploader.SaveFailedLogs();
+                    LogReuploader.AddLogAndSave(file);
                     _failedLogsTimer.Start();
                     return;
                 }
@@ -506,8 +505,7 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
             {
                 _uploadFailCounters.Remove(file);
                 AddToText($">: Upload failed 4 times for {Path.GetFileName(file)}. Queued for later reupload.");
-                LogReuploader.FailedLogs.Add(file);
-                LogReuploader.SaveFailedLogs();
+                LogReuploader.AddLogAndSave(file);
                 _failedLogsTimer.Start();
             }
             else
@@ -599,21 +597,49 @@ internal sealed class LogUploaderService : ILogUploaderController, IDisposable
         }
     }
 
+    private static readonly string[] StreamApps = ["obs", "obs64", "streamlabs", "twitchstudio"];
+
     private static bool IsStreamingSoftwareRunning()
     {
-        var streamApps = new[] { "obs", "obs64", "streamlabs", "twitchstudio" };
-        return Process.GetProcesses().Any(p =>
+        Process[] processes;
+        try
         {
-            try
+            processes = Process.GetProcesses();
+        }
+        catch
+        {
+            return false;
+        }
+
+        try
+        {
+            foreach (var p in processes)
             {
-                var name = p.ProcessName.ToLowerInvariant();
-                return streamApps.Any(app => name.Contains(app));
+                try
+                {
+                    var name = p.ProcessName;
+                    foreach (var app in StreamApps)
+                    {
+                        if (name.Contains(app, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return true;
+                        }
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
             }
-            catch
+            return false;
+        }
+        finally
+        {
+            foreach (var p in processes)
             {
-                return false;
+                p.Dispose();
             }
-        });
+        }
     }
 
     private async Task ExecuteAllPingsAsync(DpsReportJson reportJson)

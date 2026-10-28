@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+using System;
+using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using PlenBotLogUploader.Tools;
 using System.Collections.Generic;
@@ -90,7 +91,23 @@ internal sealed class DpsReportJson
     /// <summary>
     ///     the URL ID used in .report domains
     /// </summary>
-    internal string UrlId => Permalink?[(Permalink.IndexOf(".report/") + 8)..] ?? "";
+    internal string UrlId
+    {
+        get
+        {
+            if (string.IsNullOrEmpty(Permalink))
+            {
+                return "";
+            }
+            var index = Permalink.IndexOf(".report/", StringComparison.OrdinalIgnoreCase);
+            if (index == -1)
+            {
+                var lastSlash = Permalink.LastIndexOf('/');
+                return lastSlash != -1 ? Permalink[(lastSlash + 1)..] : Permalink;
+            }
+            return Permalink[(index + 8)..];
+        }
+    }
 
     /// <summary>
     ///     whether the encounter was in challenge mode
@@ -105,7 +122,7 @@ internal sealed class DpsReportJson
     /// <summary>
     ///     whether the encounter was emboldened
     /// </summary>
-    internal bool Emboldened => (Encounter.Emboldened ?? 0) > 0;
+    internal bool Emboldened => (Encounter?.Emboldened ?? 0) > 0;
 
     internal List<LogPlayer> GetLogPlayers()
     {

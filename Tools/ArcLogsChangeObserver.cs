@@ -134,11 +134,11 @@ internal class ArcLogsChangeObserver(Action<FileInfo> logCreatedCallback) : IDis
     private void EnterPollThread()
     {
         var cancellationToken = _pollThreadCts!.Token;
-        var pathCache = new HashSet<string>(512); // arbitrary initial size to prevent some early reallocations
+        var pathCache = new HashSet<string>(512, StringComparer.OrdinalIgnoreCase);
         var initialRound = true;
         try
         {
-            while (!_pollThreadCts.IsCancellationRequested)
+            while (!cancellationToken.IsCancellationRequested)
             {
                 foreach (var filePath in Directory.EnumerateFiles(_rootPath!, "*.*", SearchOption.AllDirectories))
                 {
@@ -148,20 +148,19 @@ internal class ArcLogsChangeObserver(Action<FileInfo> logCreatedCallback) : IDis
                         continue;
                     }
 
-                    if (!pathCache.Contains(filePath))
+                    if (pathCache.Add(filePath) && !initialRound)
                     {
-                        if (!initialRound)
-                        {
-                            logCreatedCallback(new FileInfo(filePath));
-                        }
-                        pathCache.Add(filePath);
+                        logCreatedCallback(new FileInfo(filePath));
                     }
                 }
                 if (initialRound)
                 {
                     initialRound = false;
                 }
-                Thread.Sleep(30000);
+                if (cancellationToken.WaitHandle.WaitOne(30000))
+                {
+                    break;
+                }
             }
         }
         catch (Exception)

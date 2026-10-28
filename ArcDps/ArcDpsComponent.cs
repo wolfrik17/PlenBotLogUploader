@@ -65,27 +65,34 @@ public sealed class ArcDpsComponent
         return All;
     }
 
+    internal string FullPath => Path.Combine(ApplicationSettings.Current.Gw2Location ?? "", (RelativeLocation ?? "").TrimStart('/', '\\'));
+
     internal async Task<bool> DownloadComponent(HttpClientController httpController)
     {
+        var targetPath = FullPath;
         if (!string.IsNullOrWhiteSpace(DownloadLink))
         {
-            return await httpController.DownloadFileAsync(DownloadLink, ApplicationSettings.Current.Gw2Location + RelativeLocation);
+            return await httpController.DownloadFileAsync(DownloadLink, targetPath);
         }
         if (string.IsNullOrWhiteSpace(Repository))
         {
             return false;
         }
-        var dll = LatestRelease?.Assets?.FirstOrDefault(x => x.Name.EndsWith(".dll"))?.DownloadUrl;
+        var dll = LatestRelease?.Assets?.FirstOrDefault(x => x.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))?.DownloadUrl;
         if (dll is not null)
         {
-            return await httpController.DownloadFileAsync(dll, ApplicationSettings.Current.Gw2Location + RelativeLocation);
+            return await httpController.DownloadFileAsync(dll, targetPath);
         }
         await GetGitHubRelease(httpController);
-        dll = LatestRelease?.Assets?.FirstOrDefault(x => x.Name.EndsWith(".dll"))?.DownloadUrl;
-        return dll is not null;
+        dll = LatestRelease?.Assets?.FirstOrDefault(x => x.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))?.DownloadUrl;
+        if (dll is not null)
+        {
+            return await httpController.DownloadFileAsync(dll, targetPath);
+        }
+        return false;
     }
 
-    internal bool IsInstalled() => File.Exists(ApplicationSettings.Current.Gw2Location + RelativeLocation);
+    internal bool IsInstalled() => File.Exists(FullPath);
 
     internal bool IsCurrentVersion(string version)
     {
@@ -111,7 +118,7 @@ public sealed class ArcDpsComponent
         }
         // arcdps
         var versionMd5 = version.Split(' ')[0];
-        return MakeMd5Hash().Equals(versionMd5);
+        return string.Equals(MakeMd5Hash(), versionMd5, StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task<GitHubReleaseLatest> GetGitHubRelease(HttpClientController httpController) => LatestRelease = await httpController.GetGitHubLatestReleaseAsync(Repository);
@@ -127,14 +134,14 @@ public sealed class ArcDpsComponent
             return null;
         }
         var release = await GetGitHubRelease(httpController);
-        return release?.Assets?.FirstOrDefault(x => x.Name.EndsWith(".dll"))?.Size.ToString();
+        return release?.Assets?.FirstOrDefault(x => x.Name.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))?.Size.ToString();
     }
 
     private long GetFileSize()
     {
         try
         {
-            return new FileInfo(ApplicationSettings.Current.Gw2Location + RelativeLocation).Length;
+            return new FileInfo(FullPath).Length;
         }
         catch
         {
@@ -147,9 +154,9 @@ public sealed class ArcDpsComponent
         using var md5 = MD5.Create();
         try
         {
-            using var stream = File.OpenRead(ApplicationSettings.Current.Gw2Location + RelativeLocation);
+            using var stream = File.OpenRead(FullPath);
             var hash = md5.ComputeHash(stream);
-            return BitConverter.ToString(hash).Replace("-", "").ToLower();
+            return Convert.ToHexString(hash).ToLowerInvariant();
         }
         catch
         {

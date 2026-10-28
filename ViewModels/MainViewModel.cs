@@ -263,6 +263,9 @@ public partial class MainViewModel : ViewModelBase
         LogsLocation = settings.LogsLocation;
         Gw2Location = settings.Gw2Location;
         IsMonitoring = _service.IsMonitoring;
+        IsSessionRunning = _service.IsSessionRunning;
+        IsSessionPaused = _service.IsSessionPaused;
+        IsTwitchConnected = _service.IsTwitchConnected;
         LogsCount = _service.LogsCount;
 
         MinimiseToTray = settings.MinimiseToTray;
@@ -299,48 +302,127 @@ public partial class MainViewModel : ViewModelBase
 
     public void RefreshCollections()
     {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshCollections);
+            return;
+        }
+
+        RefreshWebhooks();
+        RefreshTeams();
+        RefreshRemotePings();
+        RefreshAleeva();
+        RefreshGw2ApiKeys();
+        RefreshUserTokens();
+        RefreshArcDpsComponents();
+        RefreshTwitchCommands();
+    }
+
+    public void RefreshWebhooks()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshWebhooks);
+            return;
+        }
         DiscordWebhooksList.Clear();
         foreach (var webhook in DiscordWebhooks.All.Values)
         {
             DiscordWebhooksList.Add(webhook);
         }
+    }
 
+    public void RefreshTeams()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshTeams);
+            return;
+        }
         TeamsList.Clear();
         foreach (var team in Teams.Teams.All.Values)
         {
             TeamsList.Add(team);
         }
+    }
 
+    public void RefreshRemotePings()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshRemotePings);
+            return;
+        }
         RemotePingsList.Clear();
         foreach (var ping in PingConfigurations.All.Values)
         {
             RemotePingsList.Add(ping);
         }
+    }
 
+    public void RefreshAleeva()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshAleeva);
+            return;
+        }
         AleevaIntegrationsList.Clear();
         foreach (var integration in AleevaIntegrations.All)
         {
             AleevaIntegrationsList.Add(integration);
         }
+    }
 
+    public void RefreshGw2ApiKeys()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshGw2ApiKeys);
+            return;
+        }
         Gw2ApiKeysList.Clear();
         foreach (var key in ApplicationSettings.Current.Gw2Apis)
         {
             Gw2ApiKeysList.Add(key);
         }
+    }
 
+    public void RefreshUserTokens()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshUserTokens);
+            return;
+        }
         UserTokensList.Clear();
         foreach (var token in ApplicationSettings.Current.Upload.DpsReportUserTokens)
         {
             UserTokensList.Add(token);
         }
+    }
 
+    public void RefreshArcDpsComponents()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshArcDpsComponents);
+            return;
+        }
         ArcDpsComponentsList.Clear();
         foreach (var component in ArcDpsComponent.All)
         {
             ArcDpsComponentsList.Add(component);
         }
+    }
 
+    public void RefreshTwitchCommands()
+    {
+        if (!Avalonia.Threading.Dispatcher.UIThread.CheckAccess())
+        {
+            Avalonia.Threading.Dispatcher.UIThread.Post(RefreshTwitchCommands);
+            return;
+        }
         TwitchCommandsList.Clear();
         foreach (var cmd in TwitchCommands.All)
         {
@@ -449,7 +531,7 @@ public partial class MainViewModel : ViewModelBase
             }
         }
         _service.AddToText(">>> arcDPS plugin update check complete.");
-        RefreshCollections();
+        RefreshArcDpsComponents();
     }
 
     [RelayCommand]
@@ -588,7 +670,7 @@ public partial class MainViewModel : ViewModelBase
                 var nextKey = DiscordWebhooks.All.Count > 0 ? DiscordWebhooks.All.Keys.Max() + 1 : 1;
                 DiscordWebhooks.All[nextKey] = result;
                 DiscordWebhooks.SaveToJson(DiscordWebhooks.All, DiscordWebhooks.JsonFileLocation);
-                RefreshCollections();
+                RefreshWebhooks();
                 _service.AddToText($">>> Added Discord webhook: {result.Name}");
             }
         }
@@ -602,7 +684,7 @@ public partial class MainViewModel : ViewModelBase
         if (result is not null)
         {
             DiscordWebhooks.SaveToJson(DiscordWebhooks.All, DiscordWebhooks.JsonFileLocation);
-            RefreshCollections();
+            RefreshWebhooks();
             _service.AddToText($">>> Updated Discord webhook: {result.Name}");
         }
     }
@@ -616,7 +698,7 @@ public partial class MainViewModel : ViewModelBase
         {
             DiscordWebhooks.All.Remove(pair.Key);
             DiscordWebhooks.SaveToJson(DiscordWebhooks.All, DiscordWebhooks.JsonFileLocation);
-            RefreshCollections();
+            RefreshWebhooks();
             _service.AddToText($">>> Removed Discord webhook: {webhook.Name}");
         }
     }
@@ -651,7 +733,7 @@ public partial class MainViewModel : ViewModelBase
                 result.Id = nextKey;
                 Teams.Teams.All[nextKey] = result;
                 Teams.Teams.SaveToJson(Teams.Teams.All);
-                RefreshCollections();
+                RefreshTeams();
                 _service.AddToText($">>> Added Team: {result.Name}");
             }
         }
@@ -665,7 +747,7 @@ public partial class MainViewModel : ViewModelBase
         if (result is not null)
         {
             Teams.Teams.SaveToJson(Teams.Teams.All);
-            RefreshCollections();
+            RefreshTeams();
             _service.AddToText($">>> Updated Team: {result.Name}");
         }
     }
@@ -676,7 +758,7 @@ public partial class MainViewModel : ViewModelBase
         if (team is null) return;
         Teams.Teams.All.Remove(team.Id);
         Teams.Teams.SaveToJson(Teams.Teams.All);
-        RefreshCollections();
+        RefreshTeams();
         _service.AddToText($">>> Removed Team: {team.Name}");
     }
 
@@ -702,7 +784,7 @@ public partial class MainViewModel : ViewModelBase
                 var nextKey = PingConfigurations.All.Count > 0 ? PingConfigurations.All.Keys.Max() + 1 : 1;
                 PingConfigurations.All[nextKey] = result;
                 PingConfigurations.SaveToJson(PingConfigurations.All.Values);
-                RefreshCollections();
+                RefreshRemotePings();
                 _service.AddToText($">>> Added Remote Ping: {result.Name}");
             }
         }
@@ -716,7 +798,7 @@ public partial class MainViewModel : ViewModelBase
         if (result is not null)
         {
             PingConfigurations.SaveToJson(PingConfigurations.All.Values);
-            RefreshCollections();
+            RefreshRemotePings();
             _service.AddToText($">>> Updated Remote Ping: {result.Name}");
         }
     }
@@ -730,7 +812,7 @@ public partial class MainViewModel : ViewModelBase
         {
             PingConfigurations.All.Remove(pair.Key);
             PingConfigurations.SaveToJson(PingConfigurations.All.Values);
-            RefreshCollections();
+            RefreshRemotePings();
             _service.AddToText($">>> Removed Remote Ping: {ping.Name}");
         }
     }
@@ -772,7 +854,7 @@ public partial class MainViewModel : ViewModelBase
             {
                 AleevaIntegrations.All.Add(result);
                 AleevaIntegrations.SaveToJson(AleevaIntegrations.All);
-                RefreshCollections();
+                RefreshAleeva();
                 _service.AddToText($">>> Added Aleeva integration: {result.Name}");
             }
         }
@@ -786,7 +868,7 @@ public partial class MainViewModel : ViewModelBase
         if (result is not null)
         {
             AleevaIntegrations.SaveToJson(AleevaIntegrations.All);
-            RefreshCollections();
+            RefreshAleeva();
             _service.AddToText($">>> Updated Aleeva integration: {result.Name}");
         }
     }
@@ -797,7 +879,7 @@ public partial class MainViewModel : ViewModelBase
         if (aleeva is null) return;
         AleevaIntegrations.All.Remove(aleeva);
         AleevaIntegrations.SaveToJson(AleevaIntegrations.All);
-        RefreshCollections();
+        RefreshAleeva();
         _service.AddToText($">>> Removed Aleeva integration: {aleeva.Name}");
     }
 
@@ -820,12 +902,12 @@ public partial class MainViewModel : ViewModelBase
             {
                 ApplicationSettings.Current.Gw2Apis.Add(result);
                 ApplicationSettings.Current.Save();
-                RefreshCollections();
+                RefreshGw2ApiKeys();
                 _ = Task.Run(async () =>
                 {
                     await result.ValidateToken(_service.HttpClientController);
                     await result.GetCharacters(_service.HttpClientController);
-                    RefreshCollections();
+                    RefreshGw2ApiKeys();
                 });
                 _service.AddToText($">>> Added GW2 API key: {result.Name}");
             }
@@ -840,12 +922,12 @@ public partial class MainViewModel : ViewModelBase
         if (result is not null)
         {
             ApplicationSettings.Current.Save();
-            RefreshCollections();
+            RefreshGw2ApiKeys();
             _ = Task.Run(async () =>
             {
                 await result.ValidateToken(_service.HttpClientController);
                 await result.GetCharacters(_service.HttpClientController);
-                RefreshCollections();
+                RefreshGw2ApiKeys();
             });
             _service.AddToText($">>> Updated GW2 API key: {result.Name}");
         }
@@ -857,7 +939,7 @@ public partial class MainViewModel : ViewModelBase
         if (key is null) return;
         ApplicationSettings.Current.Gw2Apis.Remove(key);
         ApplicationSettings.Current.Save();
-        RefreshCollections();
+        RefreshGw2ApiKeys();
         _service.AddToText($">>> Removed GW2 API key: {key.Name}");
     }
 
@@ -881,7 +963,7 @@ public partial class MainViewModel : ViewModelBase
             {
                 ApplicationSettings.Current.Upload.DpsReportUserTokens.Add(result);
                 ApplicationSettings.Current.Save();
-                RefreshCollections();
+                RefreshUserTokens();
                 _service.AddToText($">>> Added dps.report user token: {result.Name}");
             }
         }
@@ -895,7 +977,7 @@ public partial class MainViewModel : ViewModelBase
         if (result is not null)
         {
             ApplicationSettings.Current.Save();
-            RefreshCollections();
+            RefreshUserTokens();
             _service.AddToText($">>> Updated dps.report user token: {result.Name}");
         }
     }
@@ -906,7 +988,7 @@ public partial class MainViewModel : ViewModelBase
         if (token is null) return;
         ApplicationSettings.Current.Upload.DpsReportUserTokens.Remove(token);
         ApplicationSettings.Current.Save();
-        RefreshCollections();
+        RefreshUserTokens();
         _service.AddToText($">>> Removed dps.report user token: {token.Name}");
     }
 

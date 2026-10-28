@@ -73,7 +73,7 @@ public class AleevaIntegration : IListViewItemInfo<AleevaIntegration>
             return;
         }
         if ((SendOnSuccessOnly && !(reportJson.Encounter.Success ?? false))
-            || !(Team?.IsSatisfied(players) ?? false))
+            || !(Team?.IsSatisfied(players) ?? true))
         {
             return;
         }
@@ -91,7 +91,7 @@ public class AleevaIntegration : IListViewItemInfo<AleevaIntegration>
             }
             var jsonLogObject = JsonConvert.SerializeObject(logObject);
             using var content = new StringContent(jsonLogObject, Encoding.UTF8, "application/json");
-            await controller.PostAsync($"{AleevaStatics.ApiAleevaUrl}/report", content);
+            using var response = await controller.PostAsync($"{AleevaStatics.ApiAleevaUrl}/report", content);
         }
         catch
         {

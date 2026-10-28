@@ -13,88 +13,112 @@ namespace PlenBotLogUploader.Tools;
 public static class WingmanRePing
 {
     private static string FileLocation => Path.Combine(ApplicationSettings.LocalDir, "wingmanreping.json");
-    
+    private static readonly object _lock = new();
+
     private static HashSet<WingmanPingInfo> _logsToPing;
 
     internal static HashSet<WingmanPingInfo> LogsToPing
     {
         get
         {
-            if (_logsToPing is not null)
+            lock (_lock)
             {
-                return _logsToPing;
-            }
-            if (File.Exists(FileLocation))
-            {
-                try
+                if (_logsToPing is not null)
                 {
-                    _logsToPing = JsonConvert.DeserializeObject<List<WingmanPingInfo>>(File.ReadAllText(FileLocation))
-                                                          .AsValueEnumerable()
-                                                          .Where(x => File.Exists(x.FilePath))
-                                                          .GroupBy(x => x.FilePath)
-                                                          .Select(x => x.AsValueEnumerable().First())
-                                                          .ToHashSet();
+                    return _logsToPing;
                 }
-                catch
+                if (File.Exists(FileLocation))
+                {
+                    try
+                    {
+                        _logsToPing = JsonConvert.DeserializeObject<List<WingmanPingInfo>>(File.ReadAllText(FileLocation))
+                                                              .AsValueEnumerable()
+                                                              .Where(x => File.Exists(x.FilePath))
+                                                              .GroupBy(x => x.FilePath)
+                                                              .Select(x => x.AsValueEnumerable().First())
+                                                              .ToHashSet();
+                    }
+                    catch
+                    {
+                        _logsToPing = [];
+                    }
+                }
+                else
                 {
                     _logsToPing = [];
                 }
+                return _logsToPing;
             }
-            else
-            {
-                _logsToPing = [];
-            }
-            return _logsToPing;
         }
     }
     
     internal static void SaveLogsToPing()
     {
-        try
+        lock (_lock)
         {
-            File.WriteAllText(FileLocation, JsonConvert.SerializeObject(LogsToPing, Formatting.Indented));
-        }
-        catch
-        {
-            // do nothing
+            try
+            {
+                File.WriteAllText(FileLocation, JsonConvert.SerializeObject(LogsToPing, Formatting.Indented));
+            }
+            catch
+            {
+                // do nothing
+            }
         }
     }
 
     internal static void RemoveLogAndSave(string file)
     {
-        var logToRemove = LogsToPing
-            .AsValueEnumerable()
-            .FirstOrDefault(x => file.Equals(x.FilePath) && File.Exists(x.FilePath));
-        if (logToRemove is null)
+        lock (_lock)
         {
-            return;
-        }
-        var removed = LogsToPing.Remove(logToRemove);
-        if (removed)
-        {
-            SaveLogsToPing();
+            var logToRemove = LogsToPing
+                .AsValueEnumerable()
+                .FirstOrDefault(x => file.Equals(x.FilePath, StringComparison.OrdinalIgnoreCase));
+            if (logToRemove is null)
+            {
+                return;
+            }
+            if (LogsToPing.Remove(logToRemove))
+            {
+                SaveLogsToPing();
+            }
         }
     }
 
     internal static void ProcessLogs(SemaphoreSlim semaphore, Func<string, DpsReportJsonExtraJson, Task> process)
     {
-        foreach (var wingmanPingInfo in LogsToPing.AsValueEnumerable())
+        List<WingmanPingInfo> items;
+        lock (_lock)
         {
-            if (!File.Exists(wingmanPingInfo.FilePath))
-            {
-                LogsToPing.Remove(wingmanPingInfo);
-                continue;
-            }
+            LogsToPing.RemoveWhere(x => !File.Exists(x.FilePath));
+            items = [.. LogsToPing];
+        }
+
+        foreach (var wingmanPingInfo in items)
+        {
             _ = Task.Run(async () =>
             {
-                var convertedExtraJson = new DpsReportJsonExtraJson()
+                try
                 {
-                    TriggerId = wingmanPingInfo.TriggerId,
-                    RecordedByAccountName = wingmanPingInfo.UploadedBy,
-                };
-                await semaphore.WaitAsync();
-                await process(wingmanPingInfo.FilePath, convertedExtraJson);
-                semaphore.Release();
+                    var convertedExtraJson = new DpsReportJsonExtraJson
+                    {
+                        TriggerId = wingmanPingInfo.TriggerId,
+                        RecordedByAccountName = wingmanPingInfo.UploadedBy,
+                    };
+                    await semaphore.WaitAsync();
+                    try
+                    {
+                        await process(wingmanPingInfo.FilePath, convertedExtraJson);
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
+                }
+                catch
+                {
+                    // ignored
+                }
             });
         }
     }

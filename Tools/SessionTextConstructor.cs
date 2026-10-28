@@ -1,4 +1,4 @@
-﻿using PlenBotLogUploader.DiscordApi;
+using PlenBotLogUploader.DiscordApi;
 using PlenBotLogUploader.DpsReport;
 using System;
 using System.Collections.Generic;
@@ -34,6 +34,9 @@ internal static class SessionTextConstructor
             Thumbnail = DefaultThumbnail,
         };
 
+    private static bool EndsWithHeader(StringBuilder sb)
+        => sb.Length >= 4 && sb[^1] == '\n' && sb[^2] == '*' && sb[^3] == '*' && sb[^4] == '*';
+
     internal static DiscordEmbeds ConstructSessionEmbeds(List<DpsReportJson> reportsJson, LogSessionSettings logSessionSettings)
     {
         var discordEmbedsSuccessFailure = new List<DiscordApiJsonContentEmbed>();
@@ -44,40 +47,37 @@ internal static class SessionTextConstructor
         var raidEncounterLogs = logSessionSettings.SortBy.Equals(LogSessionSortBy.RaidEncounterCategories) ?
             reportsJson
                 .AsValueEnumerable()
-                .Where(x => Bosses.GetCategoryForBoss(x.Evtc.BossId) > 0)
-                .Select(x => new { LogData = x, RaidEncounterCategory = Bosses.GetCategoryForBoss(x.Evtc.BossId) })
+                .Where(x => Bosses.GetCategoryForBoss(x.Evtc?.BossId ?? 0) > 0)
+                .Select(x => new { LogData = x, RaidEncounterCategory = Bosses.GetCategoryForBoss(x.Evtc?.BossId ?? 0) })
                 .OrderBy(x => (int)x.RaidEncounterCategory)
-                .ThenBy(x => Bosses.GetBossOrder(x.LogData.Encounter.BossId))
+                .ThenBy(x => Bosses.GetBossOrder(x.LogData.Encounter?.BossId ?? 0))
                 .ThenBy(x => x.LogData.UploadTime)
                 .ToArray() :
             reportsJson
                 .AsValueEnumerable()
-                .Where(x => Bosses.GetCategoryForBoss(x.Evtc.BossId) > 0)
-                .Select(x => new { LogData = x, RaidEncounterCategory = Bosses.GetCategoryForBoss(x.Evtc.BossId) })
+                .Where(x => Bosses.GetCategoryForBoss(x.Evtc?.BossId ?? 0) > 0)
+                .Select(x => new { LogData = x, RaidEncounterCategory = Bosses.GetCategoryForBoss(x.Evtc?.BossId ?? 0) })
                 .OrderBy(x => x.LogData.UploadTime)
                 .ToArray();
         var fractalLogs = reportsJson
             .AsValueEnumerable()
-            .Where(x => Bosses.All.AsValueEnumerable()
-                .Any(y => y.BossId.Equals(x.Evtc.BossId) && y.Type.Equals(BossType.Fractal)))
+            .Where(x => Bosses.GetBossDataFromId(x.Evtc?.BossId ?? 0)?.Type == BossType.Fractal)
             .ToArray();
         var golemLogs = reportsJson
             .AsValueEnumerable()
-            .Where(x => Bosses.All.AsValueEnumerable()
-                .Any(y => y.BossId.Equals(x.Evtc.BossId) && y.Type.Equals(BossType.Golem)))
+            .Where(x => Bosses.GetBossDataFromId(x.Evtc?.BossId ?? 0)?.Type == BossType.Golem)
             .ToArray();
         var wvwLogs = reportsJson
             .AsValueEnumerable()
-            .Where(x => Bosses.All.AsValueEnumerable()
-                .Any(y => y.BossId.Equals(x.Evtc.BossId) && y.Type.Equals(BossType.WvW)))
+            .Where(x => Bosses.GetBossDataFromId(x.Evtc?.BossId ?? 0)?.Type == BossType.WvW)
             .ToArray();
         var otherLogs = reportsJson
             .AsValueEnumerable()
             .Where(x =>
-                Bosses.All.AsValueEnumerable()
-                    .Any(y => y.BossId.Equals(x.Evtc.BossId) && y.Type.Equals(BossType.None)) ||
-                !Bosses.All
-                    .Any(y => y.BossId.Equals(x.Evtc.BossId)))
+            {
+                var boss = Bosses.GetBossDataFromId(x.Evtc?.BossId ?? 0);
+                return boss is null || boss.Type == BossType.None;
+            })
             .ToArray();
 
         var durationText = $"Session duration: **{logSessionSettings.ElapsedTime}**";
@@ -212,15 +212,15 @@ internal static class SessionTextConstructor
         }
         if (fractalLogs.Length > 0)
         {
-            if (!builderSuccessFailure.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderSuccessFailure))
             {
                 builderSuccessFailure.Append("\n\n");
             }
-            if (!builderSuccess.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderSuccess))
             {
                 builderSuccess.Append("\n\n");
             }
-            if (!builderFailure.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderFailure))
             {
                 builderFailure.Append("\n\n");
             }
@@ -283,15 +283,15 @@ internal static class SessionTextConstructor
         }
         if (golemLogs.Length > 0)
         {
-            if (!builderSuccessFailure.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderSuccessFailure))
             {
                 builderSuccessFailure.Append("\n\n");
             }
-            if (!builderSuccess.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderSuccess))
             {
                 builderSuccess.Append("\n\n");
             }
-            if (!builderFailure.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderFailure))
             {
                 builderFailure.Append("\n\n");
             }
@@ -339,34 +339,35 @@ internal static class SessionTextConstructor
                 var totalEnemyKills = wvwLogs.Select(x =>
                         x.ExtraJson?.Players
                             .Where(y => !y.FriendlyNpc && !y.NotInSquad)
-                            .Select(y => y.StatsTargets.Select(z => z[0].Killed).Sum())
+                            .Select(y => y.StatsTargets?.Select(z => z.Length > 0 ? z[0].Killed : 0).Sum() ?? 0)
                             .Sum()
                         ?? 0)
                     .Sum();
                 var totalSquadDeaths = wvwLogs.Select(x =>
                         x.ExtraJson?.Players
                             .Where(y => !y.FriendlyNpc && !y.NotInSquad)
-                            .Select(y => y.Defenses[0].DeadCount)
+                            .Select(y => y.Defenses?.Length > 0 ? y.Defenses[0].DeadCount : 0)
                             .Sum()
                         ?? 0)
                     .Sum();
+                var kdr = totalSquadDeaths == 0 ? (double)totalEnemyKills : (double)totalEnemyKills / totalSquadDeaths;
                 discordEmbedSummary = MakeEmbedFromText($"{logSessionSettings.Name} - WvW Summary", $"{durationText}\n\n" +
                                                                                                     $"Total kills: **{totalEnemyKills}**\nTotal kills per minute: **{Math.Round(totalEnemyKills / logSessionSettings.ElapsedTimeSpan.TotalMinutes, 3).ToString(CultureInfo.InvariantCulture.NumberFormat)}**\n\n" +
                                                                                                     $"Total squad deaths: **{totalSquadDeaths}**\nTotal squad deaths per minute: **{Math.Round(totalSquadDeaths / logSessionSettings.ElapsedTimeSpan.TotalMinutes, 3).ToString(CultureInfo.InvariantCulture.NumberFormat)}**\n\n" +
-                                                                                                    $"Kill Death Ratio: **{Math.Round((double)(totalEnemyKills / (totalSquadDeaths == 0 ? 1 : totalSquadDeaths)), 2).ToString(CultureInfo.InvariantCulture.NumberFormat)}**");
+                                                                                                    $"Kill Death Ratio: **{Math.Round(kdr, 2).ToString(CultureInfo.InvariantCulture.NumberFormat)}**");
                 discordEmbedSummary.Thumbnail = DefaultWvWSummaryThumbnail;
             }
             if (logSessionSettings.EnableWvWLogList)
             {
-                if (!builderSuccessFailure.ToString().EndsWith("***\n"))
+                if (!EndsWithHeader(builderSuccessFailure))
                 {
                     builderSuccessFailure.Append("\n\n");
                 }
-                if (!builderSuccess.ToString().EndsWith("***\n"))
+                if (!EndsWithHeader(builderSuccess))
                 {
                     builderSuccess.Append("\n\n");
                 }
-                if (!builderFailure.ToString().EndsWith("***\n"))
+                if (!EndsWithHeader(builderFailure))
                 {
                     builderFailure.Append("\n\n");
                 }
@@ -410,15 +411,15 @@ internal static class SessionTextConstructor
         }
         if (otherLogs.Length > 0)
         {
-            if (!builderSuccessFailure.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderSuccessFailure))
             {
                 builderSuccessFailure.Append("\n\n");
             }
-            if (!builderSuccess.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderSuccess))
             {
                 builderSuccess.Append("\n\n");
             }
-            if (!builderFailure.ToString().EndsWith("***\n"))
+            if (!EndsWithHeader(builderFailure))
             {
                 builderFailure.Append("\n\n");
             }
@@ -474,7 +475,7 @@ internal static class SessionTextConstructor
                 }
             }
         }
-        if (!builderSuccessFailure.ToString().EndsWith("***\n"))
+        if (!EndsWithHeader(builderSuccessFailure))
         {
             if (builderSuccessFailure.Length != 0)
             {
@@ -482,7 +483,7 @@ internal static class SessionTextConstructor
                 discordEmbedsSuccessFailure.Add(MakeEmbedFromText(logSessionSettings.Name + (messageSuccessFailureCount > 1 ? $" part {messageSuccessFailureCount}" : ""), builderSuccessFailure.ToString()));
             }
         }
-        if (!builderSuccess.ToString().EndsWith("***\n"))
+        if (!EndsWithHeader(builderSuccess))
         {
             if (builderSuccess.Length != 0)
             {
@@ -490,7 +491,7 @@ internal static class SessionTextConstructor
                 discordEmbedsSuccess.Add(MakeEmbedFromText(logSessionSettings.Name + (messageSuccessCount > 1 ? $" part {messageSuccessCount}" : ""), builderSuccess.ToString()));
             }
         }
-        if (!builderFailure.ToString().EndsWith("***\n"))
+        if (!EndsWithHeader(builderFailure))
         {
             if (builderFailure.Length != 0)
             {

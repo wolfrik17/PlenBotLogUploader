@@ -1,3 +1,4 @@
+using System;
 using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using System.Collections.Generic;
@@ -92,9 +93,29 @@ internal static class TwitchCommands
     internal static List<TwitchCommand> FindResponsesForInput(string input)
     {
         var responses = new List<TwitchCommand>();
-        var enabled = All.AsValueEnumerable().Where(x => x.Enabled).ToArray();
-        responses.AddRange(enabled.AsValueEnumerable().Where(x => x.IsRegEx && (x.Regex?.IsMatch(input) ?? false)).ToArray());
-        responses.AddRange(enabled.AsValueEnumerable().Where(x => input.StartsWith(x.Command)).ToArray());
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            return responses;
+        }
+
+        foreach (var cmd in All)
+        {
+            if (!cmd.Enabled)
+            {
+                continue;
+            }
+            if (cmd.IsRegEx)
+            {
+                if (cmd.Regex?.IsMatch(input) == true)
+                {
+                    responses.Add(cmd);
+                }
+            }
+            else if (!string.IsNullOrEmpty(cmd.Command) && input.StartsWith(cmd.Command, StringComparison.OrdinalIgnoreCase))
+            {
+                responses.Add(cmd);
+            }
+        }
         return responses;
     }
 }

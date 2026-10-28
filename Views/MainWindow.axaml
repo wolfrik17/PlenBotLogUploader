@@ -34,7 +34,7 @@
                     </Border>
                     <TextBlock Text="PlenBot Log Uploader" FontSize="17" FontWeight="SemiBold" VerticalAlignment="Center" />
                     <Border Background="{DynamicResource BrandPrimary}" CornerRadius="10" Padding="8,2" VerticalAlignment="Center" Margin="4,0,0,0">
-                        <TextBlock Text="v105.0 • Cross-Platform" FontSize="11" Foreground="White" FontWeight="Bold" />
+                        <TextBlock Text="v106.0 • Cross-Platform" FontSize="11" Foreground="White" FontWeight="Bold" />
                     </Border>
                 </StackPanel>
 
@@ -131,7 +131,7 @@
                                 <TextBlock Text="↗" FontSize="10" />
                             </StackPanel>
                         </Button>
-                        <TextBlock Text="PlenBot Log Uploader v105.0" FontSize="10" 
+                        <TextBlock Text="PlenBot Log Uploader v106.0" FontSize="10" 
                                    Foreground="{DynamicResource SystemControlForegroundBaseMediumBrush}" 
                                    HorizontalAlignment="Center" />
                     </StackPanel>

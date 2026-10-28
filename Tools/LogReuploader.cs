@@ -11,6 +11,7 @@ namespace PlenBotLogUploader.Tools;
 internal static class LogReuploader
 {
     private static string FileLocation => Path.Combine(ApplicationSettings.LocalDir, "faileduploads.txt");
+    private static readonly object _lock = new();
 
     private static HashSet<string> _failedLogs;
     private static readonly Dictionary<string, string> PostData = new()
@@ -23,68 +24,96 @@ internal static class LogReuploader
     {
         get
         {
-            if (_failedLogs is not null)
+            lock (_lock)
             {
+                if (_failedLogs is not null)
+                {
+                    return _failedLogs;
+                }
+                if (File.Exists(FileLocation))
+                {
+                    try
+                    {
+                        _failedLogs = File.ReadAllLines(FileLocation)
+                            .AsValueEnumerable()
+                            .Where(File.Exists)
+                            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+                    }
+                    catch
+                    {
+                        _failedLogs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                    }
+                }
+                else
+                {
+                    _failedLogs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
                 return _failedLogs;
             }
-            if (File.Exists(FileLocation))
-            {
-                try
-                {
-                    _failedLogs = File.ReadAllLines(FileLocation)
-                        .AsValueEnumerable()
-                        .Where(File.Exists)
-                        .ToHashSet();
-                }
-                catch
-                {
-                    _failedLogs = [];
-                }
-            }
-            else
-            {
-                _failedLogs = [];
-            }
-            return _failedLogs;
         }
     }
 
     internal static void SaveFailedLogs()
     {
-        try
+        lock (_lock)
         {
-            File.WriteAllLines(FileLocation, FailedLogs);
+            try
+            {
+                File.WriteAllLines(FileLocation, FailedLogs);
+            }
+            catch
+            {
+                // do nothing
+            }
         }
-        catch
+    }
+
+    internal static void AddLogAndSave(string file)
+    {
+        lock (_lock)
         {
-            // do nothing
+            if (FailedLogs.Add(file))
+            {
+                SaveFailedLogs();
+            }
         }
     }
 
     internal static bool RemoveLogAndSave(string file)
     {
-        var removed = FailedLogs.Remove(file);
-        if (removed)
+        lock (_lock)
         {
-            SaveFailedLogs();
+            var removed = FailedLogs.Remove(file);
+            if (removed)
+            {
+                SaveFailedLogs();
+            }
+            return removed;
         }
-        return removed;
     }
 
     internal static void ProcessLogs(SemaphoreSlim semaphore, Func<string, Dictionary<string, string>, bool, Task> process)
     {
-        foreach (var fileName in FailedLogs.AsValueEnumerable())
+        List<string> logsToProcess;
+        lock (_lock)
         {
-            if (!File.Exists(fileName))
-            {
-                FailedLogs.Remove(fileName);
-                continue;
-            }
+            // Prune missing files safely
+            FailedLogs.RemoveWhere(f => !File.Exists(f));
+            logsToProcess = [.. FailedLogs];
+        }
+
+        foreach (var fileName in logsToProcess)
+        {
             _ = Task.Run(async () =>
             {
-                await semaphore.WaitAsync();
-                await process(fileName, PostData, true);
-                semaphore.Release();
+                try
+                {
+                    await process(fileName, PostData, true);
+                }
+                catch
+                {
+                    // ignored
+                }
             });
         }
     }

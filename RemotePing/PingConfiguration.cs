@@ -64,7 +64,7 @@ public sealed class PingConfiguration
                     };
                 }
 
-                if (configuration.Authentication.Active && configuration.Authentication.UseAsAuth)
+                if (configuration.Authentication?.Active == true && configuration.Authentication.UseAsAuth)
                 {
                     controller.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(configuration.Authentication.AuthName, configuration.Authentication.AuthToken);
                 }
@@ -82,24 +82,24 @@ public sealed class PingConfiguration
                         var statusJson = JsonConvert.DeserializeObject<PingResponse>(response);
                         if (responseMessage.IsSuccessStatusCode)
                         {
-                            mainLink?.AddToText($">:> Log {reportJson.UrlId} pinged. {statusJson.Message} (code: {responseMessage.StatusCode})");
+                            mainLink?.AddToText($">:> Log {reportJson?.UrlId} pinged. {statusJson?.Message} (code: {responseMessage.StatusCode})");
                             result = true;
                         }
                         else
                         {
-                            mainLink?.AddToText($">:> Log {reportJson.UrlId} couldn't be pinged. {statusJson.Message} (code: {responseMessage.StatusCode})");
+                            mainLink?.AddToText($">:> Log {reportJson?.UrlId} couldn't be pinged. {statusJson?.Message} (code: {responseMessage.StatusCode})");
                         }
                     }
                     else
                     {
                         if (responseMessage.IsSuccessStatusCode)
                         {
-                            mainLink?.AddToText($">:> Log {reportJson.UrlId} pinged. (code: {responseMessage.StatusCode})");
+                            mainLink?.AddToText($">:> Log {reportJson?.UrlId} pinged. (code: {responseMessage.StatusCode})");
                             result = true;
                         }
                         else
                         {
-                            mainLink?.AddToText($">:> Log {reportJson.UrlId} couldn't be pinged. (code: {responseMessage.StatusCode})");
+                            mainLink?.AddToText($">:> Log {reportJson?.UrlId} couldn't be pinged. (code: {responseMessage.StatusCode})");
                         }
                     }
                 }
@@ -126,7 +126,7 @@ public sealed class PingConfiguration
                     fields.Add("isLCM", reportJson.LegendaryChallengeMode.ToString().ToLower());
                     fields.Add("players", string.Join(';', reportJson.ExtraJson?.Players.Where(x => !x.FriendlyNpc).Select(x => x.Account).ToList() ?? reportJson.Players.Select(x => x.Value.DisplayName).ToList()));
                 }
-                if (configuration.Authentication.Active)
+                if (configuration.Authentication?.Active == true)
                 {
                     if (!configuration.Authentication.UseAsAuth)
                     {
@@ -191,7 +191,7 @@ public sealed class PingConfiguration
                     fullLink = $"{configuration.Url}&{encounterInfo}";
                 }
             }
-            if (configuration.Authentication.Active)
+            if (configuration.Authentication?.Active == true)
             {
                 if (!configuration.Authentication.UseAsAuth)
                 {

@@ -1,4 +1,4 @@
-﻿using Hardstuck.Http;
+using Hardstuck.Http;
 using Newtonsoft.Json;
 using PlenBotLogUploader.AppSettings;
 using PlenBotLogUploader.GitHub;
@@ -26,7 +26,7 @@ internal static class ClassExtensions
         return span.Minutes > 0 ? $"{span.Minutes}m {span.Seconds}s" : $"{span.Seconds}s";
     }
 
-    private static string ParseDoubleAsK(double number) => ApplicationSettings.Current.ShortenThousands ? $"{Math.Round(number / 1000, 1).ToString(CultureInfo.InvariantCulture)}k" : number.ToString();
+    private static string ParseDoubleAsK(double number) => ApplicationSettings.Current.ShortenThousands ? $"{Math.Round(number / 1000, 1).ToString(CultureInfo.InvariantCulture)}k" : number.ToString(CultureInfo.InvariantCulture);
 
     internal static string ParseAsK(this double number) => ParseDoubleAsK(number);
 
@@ -36,17 +36,16 @@ internal static class ClassExtensions
 
     internal static void AddRange<T>(this List<T> list, params T[] items)
     {
-        if (list == null)
+        if (list == null || items == null)
         {
             return;
         }
-        foreach (var item in items.AsValueEnumerable())
+        foreach (var item in items)
         {
-            if (item is null)
+            if (item is not null)
             {
-                continue;
+                list.Add(item);
             }
-            list.Add(item);
         }
     }
 

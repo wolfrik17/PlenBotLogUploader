@@ -109,27 +109,48 @@ public sealed class TeamCondition
         }
     }
 
+    private int CountTeamMembers(List<LogPlayer> players)
+    {
+        if (AccountNames.Count == 0 || players.Count == 0)
+        {
+            return 0;
+        }
+        var count = 0;
+        foreach (var player in players)
+        {
+            if (AccountNames.Contains(player.Account))
+            {
+                count++;
+            }
+        }
+        return count;
+    }
+
     internal bool IsSatisfied(List<LogPlayer> players)
     {
         if (players is null)
         {
             return false;
         }
-        var sumOfTeamMembers = AccountNames
-            .AsValueEnumerable()
-            .Select(x => players.AsValueEnumerable().Count(y => y.Account.Equals(x)))
-            .Sum();
-        return Limiter switch
+
+        switch (Limiter)
         {
-            TeamLimiter.AND => Subconditions.Count(x => x.IsSatisfied(players)) == Subconditions.Count,
-            TeamLimiter.OR => Subconditions.Any(x => x.IsSatisfied(players)),
-            TeamLimiter.NOT => Subconditions.Count(x => !x.IsSatisfied(players)) == Subconditions.Count,
-            TeamLimiter.CommanderName => players.Any(x => x.IsCommander && AccountNames.Contains(x.Account)),
-            TeamLimiter.Exact => sumOfTeamMembers == LimiterValue,
-            TeamLimiter.Except => sumOfTeamMembers == 0,
-            // at least
-            _ => sumOfTeamMembers >= LimiterValue,
-        };
+            case TeamLimiter.AND:
+                return Subconditions.Count > 0 && Subconditions.All(x => x.IsSatisfied(players));
+            case TeamLimiter.OR:
+                return Subconditions.Any(x => x.IsSatisfied(players));
+            case TeamLimiter.NOT:
+                return Subconditions.All(x => !x.IsSatisfied(players));
+            case TeamLimiter.CommanderName:
+                return players.Any(x => x.IsCommander && AccountNames.Contains(x.Account));
+            case TeamLimiter.Exact:
+                return CountTeamMembers(players) == LimiterValue;
+            case TeamLimiter.Except:
+                return CountTeamMembers(players) == 0;
+            case TeamLimiter.AtLeast:
+            default:
+                return CountTeamMembers(players) >= LimiterValue;
+        }
     }
 
     internal string Descriptor()

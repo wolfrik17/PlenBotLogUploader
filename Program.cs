@@ -13,11 +13,18 @@ internal static class Program
     [STAThread]
     public static void Main(string[] args)
     {
-        var currProcess = Process.GetCurrentProcess();
+        using var currProcess = Process.GetCurrentProcess();
         var processName = currProcess.ProcessName;
+        var currId = currProcess.Id;
         var otherProcesses = Process.GetProcessesByName(processName)
-            .Where(x => x.Id != currProcess.Id)
+            .Where(x => x.Id != currId)
             .ToArray();
+
+        var anotherInstanceRunning = otherProcesses.Length != 0;
+        foreach (var p in otherProcesses)
+        {
+            p.Dispose();
+        }
 
         var localDir = ApplicationSettings.LocalDir;
         ApplicationSettings.Load();
@@ -42,7 +49,7 @@ internal static class Program
         }
 
         // If another instance is running, exit unless doing an update
-        if (otherProcesses.Length != 0 && !args.Contains("-update", StringComparer.OrdinalIgnoreCase))
+        if (anotherInstanceRunning && !args.Contains("-update", StringComparer.OrdinalIgnoreCase))
         {
             Console.WriteLine("Another instance of PlenBot Log Uploader is already running.");
             return;

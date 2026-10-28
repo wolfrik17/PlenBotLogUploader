@@ -22,6 +22,17 @@ internal static class Bosses
     /// <returns>A list with all encounters.</returns>
     internal static List<BossData> All { get; private set; } = [];
 
+    private static readonly Dictionary<int, BossData> _bossesById = new();
+
+    private static void RebuildIndex()
+    {
+        _bossesById.Clear();
+        foreach (var boss in All)
+        {
+            _bossesById.TryAdd(boss.BossId, boss);
+        }
+    }
+
     internal static void Load()
     {
         try
@@ -44,6 +55,7 @@ internal static class Bosses
             catch
             {
                 All = [];
+                RebuildIndex();
             }
         }
     }
@@ -58,6 +70,7 @@ internal static class Bosses
         var jsonData = File.ReadAllText(filePath);
 
         All = ParseJsonString(jsonData);
+        RebuildIndex();
     }
 
     /// <summary>
@@ -93,6 +106,7 @@ internal static class Bosses
         var jsonString = JsonConvert.SerializeObject(bossDataToSave, Formatting.Indented);
 
         File.WriteAllText(JsonFileLocation, jsonString, Encoding.UTF8);
+        RebuildIndex();
     }
 
     /// <summary>
@@ -118,6 +132,7 @@ internal static class Bosses
             boss.SuccessMsg = ApplicationSettings.Current.BossTemplate.SuccessText;
             boss.FailMsg = ApplicationSettings.Current.BossTemplate.FailText;
         }
+        RebuildIndex();
         SaveToJson(All);
 
         return All;
@@ -128,7 +143,11 @@ internal static class Bosses
     /// </summary>
     /// <param name="bossId">The boss id to query for</param>
     /// <returns>BossData object or null</returns>
-    internal static BossData GetBossDataFromId(int bossId) => All.Find(x => x.BossId.Equals(bossId));
+    internal static BossData GetBossDataFromId(int bossId)
+    {
+        _bossesById.TryGetValue(bossId, out var boss);
+        return boss;
+    }
 
     /// <summary>
     ///     Returns a category number based on a given encounter ID.
