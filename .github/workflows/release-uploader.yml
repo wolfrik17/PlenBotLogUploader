@@ -71,13 +71,16 @@ jobs:
     - name: Package Linux tar.gz
       run: |
         tar -czvf artifacts/PlenBotLogUploader-linux-x64.tar.gz -C artifacts/publish/linux-x64 .
+    - name: Stage Linux Release Assets
+      run: |
+        mkdir -p artifacts/linux-assets
+        cp artifacts/appimage/PlenBotLogUploader-x86_64.AppImage artifacts/linux-assets/
+        cp artifacts/PlenBotLogUploader-linux-x64.tar.gz artifacts/linux-assets/
     - name: Upload Linux Release Assets
       uses: actions/upload-artifact@v4
       with:
         name: linux-release-assets
-        path: |
-          artifacts/appimage/PlenBotLogUploader-x86_64.AppImage
-          artifacts/PlenBotLogUploader-linux-x64.tar.gz
+        path: artifacts/linux-assets/*
 
   publish-release:
     needs: [build-windows, build-linux]
@@ -101,11 +104,6 @@ jobs:
         name: PlenBot Log Uploader ${{ github.ref_name }} (Cross-Platform)
         draft: false
         generate_release_notes: true
-        files: |
-          release-files/PlenBotLogUploader-win-x64.exe
-          release-files/PlenBotLogUploader-win-x64-framework.exe
-          release-files/PlenBotLogUploader-win-x64-dlls.zip
-          release-files/PlenBotLogUploader-x86_64.AppImage
-          release-files/PlenBotLogUploader-linux-x64.tar.gz
+        files: release-files/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
